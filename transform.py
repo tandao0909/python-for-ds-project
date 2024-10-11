@@ -17,10 +17,11 @@ def process_df_format(df: pd.DataFrame) -> pd.DataFrame:
     pd.DataFrame: The processed DataFrame with transformed column names and 
                   lowercase object columns.
     """
-    df_columns = df.columns
-    if "Unnamed: 0" in df_columns:
+    if "Unnamed: 0" in df.columns: # drop Unnamed column if it exists
         df = df.drop(columns='Unnamed: 0', axis=1)
+    # convert columns name to snake_case style and lower it
     df.columns = df.columns.str.replace(' ', '_').str.lower()
+    # lower all rows of object columns
     object_columns = df.select_dtypes(include='object').columns
     df[object_columns] = df[object_columns].apply(lambda col: col.str.lower())
     return df
@@ -37,11 +38,11 @@ def process_number(description: str, pattern: str) -> pd.NA:
     pd.NA or int: Returns the first matching number as an integer if found,
                   otherwise returns pd.NA.
     """
-    if pd.isnull(description):
+    if pd.isnull(description): # if input is null return pd.NA
         return pd.NA
     match = re.search(pattern, description)
-    if match:
-        return int(re.findall(r"\d+", match.group())[0])
+    if match: 
+        return int(re.findall(r"\d+", match.group())[0]) # if match return the number before matched value
     return pd.NA
 
 def process_boolean(description: str, pattern: str) -> bool:
@@ -58,7 +59,7 @@ def process_boolean(description: str, pattern: str) -> bool:
     """
     if pd.isnull(description):
         return pd.NA
-    return bool(re.search(pattern, description))
+    return bool(re.search(pattern, description)) # if pattern in description return True, otherwise return False
 
 def process_price(price: str) -> float:
     """
@@ -70,16 +71,16 @@ def process_price(price: str) -> float:
     Returns:
     float or pd.NA: The float value of the price in billions (tỷ), or pd.NA if the format is invalid.
     """
-    if pd.isnull(price):
+    if pd.isnull(price): # if input is null return pd.NA
         return pd.NA
-    numbers = re.findall(r"\d+", price)
+    numbers = re.findall(r"\d+", price) # find all digits in price. ex: 12 tỷ 500 triệu -> [12, 5]
     if "tỷ" in price:
         if len(numbers) == 1:
             return float(numbers[0])
         elif len(numbers) == 2:
-            return float(numbers[0]) + float(numbers[1]) / 1000  # e.g., 12 tỷ 500 triệu = 12.5
+            return float(numbers[0]) + float(numbers[1]) / 1000  # ex: 12 tỷ 500 triệu = 12.5
     elif len(numbers) == 1:
-        return float(numbers[0]) / 1000  # e.g., 800 triệu = 0.8 tỷ
+        return float(numbers[0]) / 1000  # ex: 800 triệu = 0.8 tỷ
     return pd.NA
 
 def process_bedroom(description: str) -> pd.NA:
