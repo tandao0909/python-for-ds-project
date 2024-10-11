@@ -130,8 +130,6 @@ def get_data(driver,start_page):
         data = []
         print("\t------Start extracting information------")
         for j in range(n):
-            if j>5:
-                break
             # Mở link dẫn đến item
             try:
                 driver.get(links[j])
