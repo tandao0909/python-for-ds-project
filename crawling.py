@@ -10,10 +10,9 @@ import os
 
 from selenium.webdriver.chrome.options import Options
 
+
 os.environ['PATH'] = r"/usr/local/bin/"
-
-path = '/home/tiamo/Documents/code/Python for DS Project'
-
+path = os.getcwd()
 
 #Số trang bắt đầu cào dữ liệu trong từng luồng
 num_pages = [1,3,5]
@@ -22,7 +21,6 @@ n_iter = 2
 
 url = "https://batdongsan.vn/ban-nha/"
 
-path = '/home/tiamo/Documents/code/Python for DS Project'
 
 def openMultiBrowser(n):
     drivers = []
