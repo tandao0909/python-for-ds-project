@@ -48,7 +48,7 @@ def openMultiBrowser(n):
 def loadMultiPages(driver,i):
     try:
         print(f"Loading thread {i}")
-        driver.get(f"{url}p{i+2}")
+        driver.get(f"{url}p{i}")
     except TimeoutException:
         print("Timeout loading thread")
         pass
