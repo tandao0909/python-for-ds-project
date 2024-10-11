@@ -6,7 +6,7 @@ def process_number(description, pattern):
         return pd.NA
     match = re.search(pattern, description)
     if match:
-        return re.findall(r"\d+", match.group())[0]
+        return sum([float(num) for num in re.findall(r"\d+", match.group())])
     return pd.NA
 
 def process_boolean(description, pattern):
@@ -94,8 +94,8 @@ facade_step1 = df['description'].apply(process_facade_step1)
 facade_step2 = df['description'].apply(process_facade_step2)
 df['facade'] = (facade_step1 == True) & (facade_step2 == False)
 
-df['bedrooms'] = df['bedrooms'].fillna(df['new_bedrooms'])
-df['wc'] = df['wc'].fillna(df['new_bathrooms'])
+# df['bedrooms'] = df['bedrooms'].fillna(df['new_bedrooms'])
+# df['wc'] = df['wc'].fillna(df['new_bathrooms'])
 
 # columns_to_drop = ['new_bedrooms', 'new_bathrooms']
 # df = df.drop(columns=columns_to_drop, axis=1)
