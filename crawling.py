@@ -42,7 +42,7 @@ def openMultiBrowser(n):
         chrome_options.add_argument("--disable-web-security")
         chrome_options.add_argument("--blink-settings=imagesEnabled=false")
         driver = webdriver.Chrome(options=chrome_options)
-        driver.set_page_load_timeout(5)
+        driver.set_page_load_timeout(8) #Mếu muốn đảm bảo sẽ crawl được thông tin ở trừng trang thì set thời gian cao hơn nhưng bù lại quá trình cào sẽ diễn ra lâu hơn
         drivers.append(driver)
     return drivers
 
@@ -52,7 +52,7 @@ def loadMultiPages(driver,i):
         print(f"Loading thread {i}")
         driver.get(f"{url}p{i+2}")
     except TimeoutException:
-        print("Error")
+        print("Timeout loading thread")
         pass
 
 def loadMultiBrowsers(drivers_rx): 
@@ -123,8 +123,8 @@ def get_data(driver,start_page):
             # Lấy element là các item trong một page (20 items)
             print("\t------Getting links to 24 items------")
             elements = driver.find_elements('xpath','//*[@id="danhmuc"]/div[2]/div[1]/div[2]/a')
-        except TimeoutException:
-            pass
+        except:
+            continue
         
         # Trích xuất dẫn đến mô tảchi tiết của từng item
         links = [element.get_attribute('href') for element in elements]
@@ -137,7 +137,7 @@ def get_data(driver,start_page):
             try:
                 driver.get(links[j])
             except TimeoutException:
-                print("Error loading")
+                print("Timeout access post's link")
                 continue
             # Lấy ra những thông tin cần thiết (Title, Price, Số Phòng ngủ, Số WC, Diện tích, Description...etc)
             try:
