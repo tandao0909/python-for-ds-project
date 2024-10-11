@@ -15,9 +15,9 @@ os.environ['PATH'] = r"/usr/local/bin/"
 path = os.getcwd()
 
 #Số trang bắt đầu cào dữ liệu trong từng luồng
-num_pages = [1,2,3]
+num_pages = [1,30,60,90,120]
 # Số trang cần phải cào trong từng lường (step của numpages ở trên)
-n_iter = 1
+n_iter = 30
 
 url = "https://batdongsan.vn/filter?options=on&gia_tri_tinh_chon=1&priceMin=0&priceMax=400&areaMin=0&areaMax=500&"
 
@@ -138,7 +138,7 @@ def get_data(driver,start_page):
                 continue
             # Lấy ra những thông tin cần thiết (Title, Price, Số Phòng ngủ, Số WC, Diện tích, Description...etc)
             try:
-                sleep(5)
+                sleep(3)
                 tmp = []
                 driver.find_element('xpath','//*[@id="myBtn"]').click()
                 sleep(1)
@@ -156,16 +156,17 @@ def get_data(driver,start_page):
     
             data.append(tmp)
         
-        # Xếp chồng các phần tử trong list data trước đó để tạo thành ma trận với mỗi hàng là một mẫu trong bộ dữ liệu
-        matrix_data = np.vstack([item for item in data]) 
-        # Tạo ra data_page là dataframe chứa dữ liệu của một trang và concat vào dataframe report
-        data_page = pd.DataFrame(matrix_data,columns=report.columns)
-        
-        report = pd.concat([report,data_page],axis=0)
-        report.set_index(np.arange(len(report)),inplace=True)
-        # Sao lưu lại data vào file output.csv tránh trường hợp bị mất dữ liệu trong quá trình cào
-        report.to_csv(f'page{i}.csv',sep="\t",index=False)
-        print(f"------Page{i} - Done!------\n\n")
+        if len(data) > 0:
+            # Xếp chồng các phần tử trong list data trước đó để tạo thành ma trận với mỗi hàng là một mẫu trong bộ dữ liệu
+            matrix_data = np.vstack([item for item in data]) 
+            # Tạo ra data_page là dataframe chứa dữ liệu của một trang và concat vào dataframe report
+            data_page = pd.DataFrame(matrix_data,columns=report.columns)
+            
+            report = pd.concat([report,data_page],axis=0)
+            report.set_index(np.arange(len(report)),inplace=True)
+            # Sao lưu lại data vào file output.csv tránh trường hợp bị mất dữ liệu trong quá trình cào
+            report.to_csv(f'data/page{i}.csv',sep="\t",index=False)
+            print(f"------Page{i} - Done!------\n\n")
         # Chuyển sang trang kế tiếp
         try:
             driver.get(f"{url}p{i+1}")
@@ -206,7 +207,7 @@ def runInParallel(func,drivers_rx):
     return ans
 
 if __name__ == '__main__':
-    driver_r5 = openMultiBrowser(3)
+    driver_r5 = openMultiBrowser(5)
     loadMultiBrowsers(driver_r5)
     sleep(5)
     list_report = runInParallel(get_data,driver_r5)
