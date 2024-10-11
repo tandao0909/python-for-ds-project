@@ -114,7 +114,6 @@ def get_data(driver,start_page):
 
     for i in range(start_page,start_page+n_iter):
         print(f"------Start crawl page {i}------")
-
         try:
             # Lấy element là các item trong một page
             print("\t------Getting links------")
@@ -131,6 +130,8 @@ def get_data(driver,start_page):
         data = []
         print("\t------Start extracting information------")
         for j in range(n):
+            if j>5:
+                break
             # Mở link dẫn đến item
             try:
                 driver.get(links[j])
@@ -142,9 +143,10 @@ def get_data(driver,start_page):
                 sleep(5)
                 tmp = []
                 driver.find_element('xpath','//*[@id="myBtn"]').click()
+                sleep(1)
                 title = driver.find_element('xpath','/html/body/div[2]/div[1]/div[1]/div[2]/div[1]/div[2]/h1').text
                 location2 = driver.find_element('xpath','/html/body/div[2]/div[1]/div[1]/div[2]/div[1]/div[3]').text.split('\n')[0]
-                description = driver.find_element('xpath','//*[@id="more"]').text
+                description = driver.find_element('xpath','//*[@id="more1"]').text
                 params = driver.find_element('xpath','/html/body/div[2]/div[1]/div[1]/div[3]/div[3]')
                 params = get_params(params.text)
                 post_info = driver.find_element('xpath','/html/body/div[2]/div[1]/div[1]/div[4]/div/div')
