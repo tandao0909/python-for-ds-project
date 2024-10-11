@@ -15,11 +15,11 @@ os.environ['PATH'] = r"/usr/local/bin/"
 path = os.getcwd()
 
 #Số trang bắt đầu cào dữ liệu trong từng luồng
-num_pages = [1,3,5]
+num_pages = [1,2,3]
 # Số trang cần phải cào trong từng lường (step của numpages ở trên)
-n_iter = 2
+n_iter = 1
 
-url = "https://batdongsan.vn/ban-nha/"
+url = "https://batdongsan.vn/filter?options=on&gia_tri_tinh_chon=1&priceMin=0&priceMax=400&areaMin=0&areaMax=500&"
 
 
 def openMultiBrowser(n):
@@ -40,7 +40,7 @@ def openMultiBrowser(n):
         chrome_options.add_argument("--disable-web-security")
         chrome_options.add_argument("--blink-settings=imagesEnabled=false")
         driver = webdriver.Chrome(options=chrome_options)
-        driver.set_page_load_timeout(8) #Mếu muốn đảm bảo sẽ crawl được thông tin ở trừng trang thì set thời gian cao hơn nhưng bù lại quá trình cào sẽ diễn ra lâu hơn
+        driver.set_page_load_timeout(10) #Mếu muốn đảm bảo sẽ crawl được thông tin ở trừng trang thì set thời gian cao hơn nhưng bù lại quá trình cào sẽ diễn ra lâu hơn
         drivers.append(driver)
     return drivers
 
@@ -110,22 +110,22 @@ def get_data(driver,start_page):
         - start_page: số trang bắt đầu cào dữ liệu trong luồng này (ex: 1,5,10,15,20...etc)
     Return: trả về một dataframe là dữ liệu thu thập được sao khi duyệt qua n_page ứng với mỗi luồng
     '''
-    report =  pd.DataFrame(columns=['Date','Type','ID','Title','Location','Description','Area','Bedrooms','Legal','WC','House orientation','Furniture','Price'])
+    report =  pd.DataFrame(columns=['Date','Type','ID','Title','Location1','Location2','Description','Area','Bedrooms','Legal','WC','House orientation','Furniture','Price'])
 
     for i in range(start_page,start_page+n_iter):
         print(f"------Start crawl page {i}------")
-        
+
         try:
-            # Lấy ra element để tiến sang trang tiếp theo - sử dụng ở cuối vòng lặp
-            next = driver.find_element('xpath','//*[@id="danhmuc"]/div[2]/div[1]/div[2]/div/nav/ul/div/ul/li[15]/a').get_attribute('href')
-            # Lấy element là các item trong một page (20 items)
-            print("\t------Getting links to 24 items------")
+            # Lấy element là các item trong một page
+            print("\t------Getting links------")
             elements = driver.find_elements('xpath','//*[@id="danhmuc"]/div[2]/div[1]/div[2]/a')
+            location1 = driver.find_elements('css selector','.card-content .description')
         except:
             continue
         
         # Trích xuất dẫn đến mô tảchi tiết của từng item
         links = [element.get_attribute('href') for element in elements]
+        location1 = [item.text for item in location1]
         # Duyệt qua từng item
         n = len(links)
         data = []
@@ -141,14 +141,15 @@ def get_data(driver,start_page):
             try:
                 sleep(5)
                 tmp = []
+                driver.find_element('xpath','//*[@id="myBtn"]').click()
                 title = driver.find_element('xpath','/html/body/div[2]/div[1]/div[1]/div[2]/div[1]/div[2]/h1').text
-                location = driver.find_element('xpath','/html/body/div[2]/div[1]/div[1]/div[2]/div[1]/div[3]').text.split('\n')[0]
+                location2 = driver.find_element('xpath','/html/body/div[2]/div[1]/div[1]/div[2]/div[1]/div[3]').text.split('\n')[0]
                 description = driver.find_element('xpath','//*[@id="more"]').text
                 params = driver.find_element('xpath','/html/body/div[2]/div[1]/div[1]/div[3]/div[3]')
                 params = get_params(params.text)
                 post_info = driver.find_element('xpath','/html/body/div[2]/div[1]/div[1]/div[4]/div/div')
                 post_info = get_info_post(post_info.text)
-                tmp = post_info+[title,location,description]+params
+                tmp = post_info+[title,location1[j],location2,description]+params
             except:
                 print("Error")
                 continue
@@ -167,7 +168,7 @@ def get_data(driver,start_page):
         print(f"------Page{i} - Done!------\n\n")
         # Chuyển sang trang kế tiếp
         try:
-            driver.get(next)
+            driver.get(f"{url}p{i+1}")
         except TimeoutException:
             pass
 
