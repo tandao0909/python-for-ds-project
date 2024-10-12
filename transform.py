@@ -1,5 +1,7 @@
-import pandas as pd
-import re
+import pandas as pd # for DataFrame
+import re # for regular expression
+from dotenv import load_dotenv # for load environment variables
+from openai import OpenAI 
 import os
 
 RAW_DATA_PATH = "raw_data.csv"
@@ -204,6 +206,61 @@ def process_legal(text: str) -> str:
     else:
         return text
 
+def process_street(address):
+    """
+    Extracts the street name from a given address string using OpenAI's GPT model.
+    This function processes an address string to extract only the street name, excluding house numbers, wards, districts, and cities. It uses OpenAI's GPT model to perform the extraction based on specific rules.
+    
+    Parameters:
+    address (str): The address string to be processed.
+    
+    Returns:
+    str or None: The extracted street name, or None if the address does not contain a street name or contains disallowed content.
+    """
+
+    if pd.isnull(address):
+        return pd.NA
+        
+    env_openai_key = os.getenv("OPENAI_API_KEY") # get API_KEY
+
+    system_input = """
+    Hãy đóng vai là một người phân tích dữ liệu chuyên nghiệp và hoàn thành các yêu cầu sau của tôi. 
+
+    Tôi sẽ đưa cho bạn một chuỗi chứa nội dung có thể về địa chỉ, nhiệm vụ của bạn là lấy duy nhất tên đường trong địa chỉ đó (không bao gồm số nhà, phường, quận, thành phố). Sẽ có những yêu cầu cụ thể sau: 
+    - Đường có thể có số, ví dụ "đường số 8", thì bạn phải trả về "đường số 8".
+    - Một vài chuỗi sẽ có số nhà, bạn cần loại bỏ, ví dụ "1928 đường phan văn trị" hoặc "1928 phan văn trị" thì trả về "đường phan văn trị"
+    - Chuỗi chỉ có thông tin phường, quận, thành phố mà không có tên đường thì trả về None
+    - Chuỗi không đề cập gì hết thì trả về None
+    - Chuỗi chứa từ "mức giá" thì trả về None
+
+    Trả về đoạn chuỗi duy nhất thể hiện tên đường, không giải thích gì thêm"""
+
+    user_input = f"Đoạn chuỗi là: {address}"
+    
+    client = OpenAI(api_key = env_openai_key)
+
+    completion = client.chat.completions.create(
+        model = "gpt-4o-mini",
+        temperature = 0.2, # precision > creation
+        max_tokens = 15, # for about 10 words
+        n=1, # number of answers
+        messages = [
+            {
+                "role": "system",
+                "content": system_input
+            },
+            {
+                "role": "user",
+                "content":user_input
+            }
+        ]
+    )
+    
+    if completion.choices:
+        extracted_street = completion.choices[0].message['content']
+        return extracted_street.strip() or None  # Return None if empty string
+    return None  # Return None if no choices available
+
 def transform(df: pd.DataFrame) -> pd.DataFrame:
     """
     Apply all process function to input DataFrame, and drop useless column.
@@ -219,22 +276,22 @@ def transform(df: pd.DataFrame) -> pd.DataFrame:
     # make a list contains functions, columns to be processed and new columns ill be called
     # format: (process_function, process_column, new_column)
     processes = [
-        ('process_price', 'price', 'price'),
-        ('process_bedroom', 'description', 'new_bedrooms'),
-        ('process_bathroom', 'description', 'new_bathrooms'),
-        ('process_nfloor', 'description', 'n_floors'),
-        ('process_car_place', 'description', 'car_place'),
-        ('process_facade_step1', 'description', 'facade_step1'),
-        ('process_facade_step2', 'description', 'facade_step2'),
-        ('process_district', 'location1', 'district'),
-        ('process_legal', 'legal', 'legal')
+        (process_price, 'price', 'price'),
+        (process_bedroom, 'description', 'new_bedrooms'),
+        (process_bathroom, 'description', 'new_bathrooms'),
+        (process_nfloor, 'description', 'n_floors'),
+        (process_car_place, 'description', 'car_place'),
+        (process_facade_step1, 'description', 'facade_step1'),
+        (process_facade_step2, 'description', 'facade_step2'),
+        (process_district, 'location1', 'district'),
+        (process_legal, 'legal', 'legal')
     ]
     # loop through processes list and apply
-    for function_name, process_column, new_column in processes:
+    for func, process_column, new_column in processes:
         try:
-            df[new_column] = df[process_column].apply(globals()[function_name])
+            df[new_column] = df[process_column].apply(func)
         except Exception as e:
-            print(f"Error in function '{function_name}' on column '{process_column}': {e}")
+            print(f"Error in function '{func}' on column '{process_column}': {e}")
 
     # make facade column
     try:
@@ -270,6 +327,7 @@ def transform(df: pd.DataFrame) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
+    load_dotenv()
     df = pd.read_csv(RAW_DATA_PATH, sep='\t')
     df = transform(df)
     print(df.head())

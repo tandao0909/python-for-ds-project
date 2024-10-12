@@ -1,0 +1,6 @@
+pandas
+numpy
+dotenv
+openai
+request
+bs4
