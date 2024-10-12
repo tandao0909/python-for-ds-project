@@ -15,9 +15,9 @@ os.environ['PATH'] = r"/usr/local/bin/"
 path = os.getcwd()
 
 #Số trang bắt đầu cào dữ liệu trong từng luồng
-num_pages = [1,30,60,90,120]
+num_pages = [150,200,250,300,350]
 # Số trang cần phải cào trong từng lường (step của numpages ở trên)
-n_iter = 30
+n_iter = 50
 
 url = "https://batdongsan.vn/filter?options=on&gia_tri_tinh_chon=1&priceMin=0&priceMax=400&areaMin=0&areaMax=500&"
 
@@ -140,8 +140,6 @@ def get_data(driver,start_page):
             try:
                 sleep(3)
                 tmp = []
-                driver.find_element('xpath','//*[@id="myBtn"]').click()
-                sleep(1)
                 title = driver.find_element('xpath','/html/body/div[2]/div[1]/div[1]/div[2]/div[1]/div[2]/h1').text
                 location2 = driver.find_element('xpath','/html/body/div[2]/div[1]/div[1]/div[2]/div[1]/div[3]').text.split('\n')[0]
                 description = driver.find_element('xpath','//*[@id="more1"]').text
@@ -212,6 +210,6 @@ if __name__ == '__main__':
     sleep(5)
     list_report = runInParallel(get_data,driver_r5)
     df = pd.concat([report for report in list_report],axis=0)
-    df.to_csv('raw_data.csv',sep='\t')
+    df.to_csv('raw_data1.csv',sep='\t')
     
     
