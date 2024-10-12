@@ -2,7 +2,7 @@ import pandas as pd
 import re
 import os
 
-RAW_DATA_PATH = "data/raw_data.csv"
+RAW_DATA_PATH = "raw_data.csv"
 OUTPUT_PATH = "data/housing.csv"
 
 def process_df_format(df: pd.DataFrame) -> pd.DataFrame:
@@ -122,20 +122,6 @@ def process_nfloor(description: str) -> pd.NA:
     pattern = r"\d+\s?(lầu|tầng|tấm)"
     return process_number(description, pattern)
 
-def process_rentable(description: str) -> bool:
-    """
-    Check if the property is rentable based on the description string.
-
-    Parameters:
-    description (str): The input string to search in.
-
-    Returns:
-    bool or pd.NA: Returns True if the property is rentable (matches certain keywords), 
-                   False otherwise. Returns pd.NA if input is null.
-    """
-    pattern = r"triệu/tháng|tr/tháng|dòng tiền|đang cho thuê|doanh thu"
-    return process_boolean(description, pattern)
-
 def process_car_place(description: str) -> bool:
     """
     Check if there is space for a car based on the description string.
@@ -178,6 +164,49 @@ def process_facade_step2(description: str) -> bool:
     pattern = r"cách mặt tiền|cách mặt phố|sát mặt tiền"
     return process_boolean(description, pattern)
 
+def process_district(text):
+    district = text.split(",")[0]
+    if district[-1] == " ":
+        district = district[:-1] # remove last space
+    return district
+
+def process_legal(text):
+    valid_case = ["sổ đỏ/ sổ hồng", "hợp đồng mua bán"]
+    if text != valid_case[0] and text != valid_case[1]:
+        return pd.NA
+    else:
+        return text
+
+def transform(df):
+    df = process_df_format(df)
+    df['price'] = df['price'].apply(process_price)
+    df['new_bedrooms'] = df['description'].apply(process_bedroom)
+    df['new_bathrooms'] = df['description'].apply(process_bathroom)
+    df['n_floors'] = df['description'].apply(process_nfloor)
+    df['car_place'] = df['description'].apply(process_car_place)
+    facade_step1 = df['description'].apply(process_facade_step1)
+    facade_step2 = df['description'].apply(process_facade_step2)
+    df['facade'] = (facade_step1 == True) & (facade_step2 == False)
+    df['district'] = df['location1'].apply(process_district)
+
+    df['bedrooms'] = df['bedrooms'].fillna(df['new_bedrooms'])
+    df['wc'] = df['wc'].fillna(df['new_bathrooms'])
+    df['legal'] = df['legal'].apply(process_legal)
+
+
+    columns_to_drop = [
+        'new_bedrooms',
+        'new_bathrooms',
+        'description',
+        'title',
+        'location1',
+        'location2',
+    ]
+    df = df.drop(columns = columns_to_drop, axis = 1)
+    return df
+
 
 if __name__ == "__main__":
-    pass
+    df = pd.read_csv(RAW_DATA_PATH, sep='\t')
+    df = transform(df)
+    print(df.head())
