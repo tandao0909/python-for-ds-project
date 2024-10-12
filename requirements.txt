@@ -1,6 +1,6 @@
 pandas
 numpy
-dotenv
+python-dotenv
 openai
-request
+requests
 bs4
