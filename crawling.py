@@ -15,7 +15,7 @@ os.environ['PATH'] = r"/usr/local/bin/"
 path = os.getcwd()
 
 #Số trang bắt đầu cào dữ liệu trong từng luồng
-num_pages = [150,200,250,300,350]
+num_pages = [1,50,100,150,200]
 # Số trang cần phải cào trong từng lường (step của numpages ở trên)
 n_iter = 50
 
@@ -47,8 +47,8 @@ def openMultiBrowser(n):
 
 def loadMultiPages(driver,i):
     try:
-        print(f"Loading thread {i}")
-        driver.get(f"{url}p{i}")
+        print(f"Loading thread")
+        driver.get(f"{url}page={i}")
     except TimeoutException:
         print("Timeout loading thread")
         pass
@@ -167,7 +167,7 @@ def get_data(driver,start_page):
             print(f"------Page{i} - Done!------\n\n")
         # Chuyển sang trang kế tiếp
         try:
-            driver.get(f"{url}p{i+1}")
+            driver.get(f"{url}page={i+1}")
         except TimeoutException:
             pass
 
