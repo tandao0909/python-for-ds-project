@@ -161,37 +161,89 @@ def process_facade_step2(description: str) -> bool:
     bool or pd.NA: Returns True if the property is near a street facade, 
                    False otherwise. Returns pd.NA if input is null.
     """
-    pattern = r"cách mặt tiền|cách mặt phố|sát mặt tiền"
+    pattern = r"cách mặt tiền|cách mặt phố|sát mặt tiền|sát mặt phố"
     return process_boolean(description, pattern)
 
-def process_district(text):
+def process_district(text: str) -> str:
+    """
+    Extract district information from text input, the text will has format like: "Quận x , Hồ Chí Minh".
+    Then this function will split the text by delimiter "," after that get the first element and remove 
+    " " at last string's position
+
+    Parameters:
+    text (str): The input string to be extracted.
+
+    Returns:
+    string or pd.NA: Returns the extracted district if text is not null,
+                     Returns pd.NA if input is null.
+    """
+    if pd.isnull(text):
+        return pd.NA
     district = text.split(",")[0]
     if district[-1] == " ":
         district = district[:-1] # remove last space
     return district
 
-def process_legal(text):
+def process_legal(text: str) -> str:
+    """
+    Transform invalid value to pd.NA, valid values is ["sổ đỏ/ sổ hồng", "hợp đồng mua bán"]. If input text not in this list
+    return pd.NA
+
+    Parameters:
+    text (str): The input string to be checked.
+
+    Returns:
+    string or pd.NA: Returns the text if it is valid,
+                     Returns pd.NA if the input is null or the text is invalid.
+    """
+    if pd.isnull(text):
+        return pd.NA
     valid_case = ["sổ đỏ/ sổ hồng", "hợp đồng mua bán"]
     if text != valid_case[0] and text != valid_case[1]:
         return pd.NA
     else:
         return text
 
-def transform(df):
+def transform(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Apply all process function to input DataFrame, and drop useless column.
+
+    Parameters:
+    df (pd.DataFrame): The input DataFrame to be transformed.
+
+    Returns:
+    pd.DataFrame: Returns transformed DataFrame.
+    """
     df = process_df_format(df)
-    df['price'] = df['price'].apply(process_price)
-    df['new_bedrooms'] = df['description'].apply(process_bedroom)
-    df['new_bathrooms'] = df['description'].apply(process_bathroom)
-    df['n_floors'] = df['description'].apply(process_nfloor)
-    df['car_place'] = df['description'].apply(process_car_place)
-    facade_step1 = df['description'].apply(process_facade_step1)
-    facade_step2 = df['description'].apply(process_facade_step2)
-    df['facade'] = (facade_step1 == True) & (facade_step2 == False)
-    df['district'] = df['location1'].apply(process_district)
+
+    # make a list contains functions, columns to be processed and new columns ill be called
+    # format: (process_function, process_column, new_column)
+    processes = [
+        ('process_price', 'price', 'price'),
+        ('process_bedroom', 'description', 'new_bedrooms'),
+        ('process_bathroom', 'description', 'new_bathrooms'),
+        ('process_nfloor', 'description', 'n_floors'),
+        ('process_car_place', 'description', 'car_place'),
+        ('process_facade_step1', 'description', 'facade_step1'),
+        ('process_facade_step2', 'description', 'facade_step2'),
+        ('process_district', 'location1', 'district'),
+        ('process_legal', 'legal', 'legal')
+    ]
+    # loop through processes list and apply
+    for function_name, process_column, new_column in processes:
+        try:
+            df[new_column] = df[process_column].apply(globals()[function_name])
+        except Exception as e:
+            print(f"Error in function '{function_name}' on column '{process_column}': {e}")
+
+    # make facade column
+    try:
+        df['facade'] = (df['facade_step1'] == True) & (df['facade_step2'] == False)
+    except Exception as e:
+        print(f"Error calculating 'facade': {e}")
 
     df['bedrooms'] = df['bedrooms'].fillna(df['new_bedrooms'])
     df['wc'] = df['wc'].fillna(df['new_bathrooms'])
-    df['legal'] = df['legal'].apply(process_legal)
 
 
     columns_to_drop = [
@@ -199,6 +251,8 @@ def transform(df):
         'new_bathrooms',
         'description',
         'title',
+        'facade_step1',
+        'facade_step2',
         'location1',
         'location2',
     ]
