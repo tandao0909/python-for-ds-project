@@ -245,18 +245,27 @@ def transform(df: pd.DataFrame) -> pd.DataFrame:
     df['bedrooms'] = df['bedrooms'].fillna(df['new_bedrooms'])
     df['wc'] = df['wc'].fillna(df['new_bathrooms'])
 
+    # create tmp column
+    df['street'] = pd.NA
 
-    columns_to_drop = [
-        'new_bedrooms',
-        'new_bathrooms',
-        'description',
-        'title',
-        'facade_step1',
-        'facade_step2',
-        'location1',
-        'location2',
+    columns_to_use = [
+        "id",
+        "price",
+        "area",
+        "bedrooms",
+        "wc",
+        "n_floors",
+        "car_place",
+        "house_orientation",
+        "furniture",
+        "facade",
+        "legal",
+        "street",
+        "district",
+        "type",
+        "date"
     ]
-    df = df.drop(columns = columns_to_drop, axis = 1)
+    df = df[columns_to_use]
     return df
 
 
@@ -264,3 +273,4 @@ if __name__ == "__main__":
     df = pd.read_csv(RAW_DATA_PATH, sep='\t')
     df = transform(df)
     print(df.head())
+    print(df.columns)
