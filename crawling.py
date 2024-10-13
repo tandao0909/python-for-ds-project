@@ -15,9 +15,9 @@ os.environ['PATH'] = r"/usr/local/bin/"
 path = os.getcwd()
 
 #Số trang bắt đầu cào dữ liệu trong từng luồng
-num_pages = [1,50,100,150,200]
+num_pages = [470,475,480,485,490]
 # Số trang cần phải cào trong từng lường (step của numpages ở trên)
-n_iter = 50
+n_iter = 5
 
 url = "https://batdongsan.vn/filter?options=on&gia_tri_tinh_chon=1&priceMin=0&priceMax=400&areaMin=0&areaMax=500&"
 
@@ -40,7 +40,7 @@ def openMultiBrowser(n):
         chrome_options.add_argument("--disable-web-security")
         chrome_options.add_argument("--blink-settings=imagesEnabled=false")
         driver = webdriver.Chrome(options=chrome_options)
-        driver.set_page_load_timeout(10) #Mếu muốn đảm bảo sẽ crawl được thông tin ở trừng trang thì set thời gian cao hơn nhưng bù lại quá trình cào sẽ diễn ra lâu hơn
+        driver.set_page_load_timeout(8) #Mếu muốn đảm bảo sẽ crawl được thông tin ở trừng trang thì set thời gian cao hơn nhưng bù lại quá trình cào sẽ diễn ra lâu hơn
         drivers.append(driver)
     return drivers
 
@@ -142,6 +142,7 @@ def get_data(driver,start_page):
                 tmp = []
                 title = driver.find_element('xpath','/html/body/div[2]/div[1]/div[1]/div[2]/div[1]/div[2]/h1').text
                 location2 = driver.find_element('xpath','/html/body/div[2]/div[1]/div[1]/div[2]/div[1]/div[3]').text.split('\n')[0]
+                driver.find_element('xpath','//*[@id="myBtn"]').click()
                 description = driver.find_element('xpath','//*[@id="more1"]').text
                 params = driver.find_element('xpath','/html/body/div[2]/div[1]/div[1]/div[3]/div[3]')
                 params = get_params(params.text)
@@ -211,5 +212,3 @@ if __name__ == '__main__':
     list_report = runInParallel(get_data,driver_r5)
     df = pd.concat([report for report in list_report],axis=0)
     df.to_csv('raw_data1.csv',sep='\t')
-    
-    
