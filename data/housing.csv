@@ -262,7 +262,7 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 120697	16.5	342	2.0	2.0		False			True	sổ đỏ/ sổ hồng	trung mỹ tây	quận 12	tin thường	27/09/2024
 120698	4.8	37	2.0		1	False			False	sổ đỏ/ sổ hồng	lạc long quân	tân bình	tin thường	27/09/2024
 120699	3.4	56	3.0	1.0		False			False	sổ đỏ/ sổ hồng	lưu hữu phước	quận 8	tin thường	27/09/2024
-120701	3.7	444				False	đông nam		True	sổ đỏ/ sổ hồng		củ chi	tin thường	27/09/2024
+120701	3.7	444				False	đông nam		True	sổ đỏ/ sổ hồng	đường số 436	củ chi	tin thường	27/09/2024
 120702	5.3	45	2.0	2	2	True			False	sổ đỏ/ sổ hồng	cách mạng tháng tám	tân bình	tin thường	27/09/2024
 120703	10.5	120	4.0	4.0	2	True			False	sổ đỏ/ sổ hồng	số 7	bình chánh	tin thường	27/09/2024
 120704	8.3	115	3.0	3.0	1	True			False	sổ đỏ/ sổ hồng	đỗ xuân hợp	quận 9	tin thường	27/09/2024
@@ -1251,7 +1251,7 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 107598	4.2	35	2.0	3.0	2	True			False			bình thạnh	tin thường	11/09/2023
 107086	0.01	87	3.0	3.0		False			False		d1	quận 9	tin thường	05/09/2023
 106830	0.018	100			2	False			True			bình tân	tin thường	31/08/2023
-106318	0.895	417				False			False			củ chi	tin thường	25/08/2023
+106318	0.895	417				False			False		tân an hội	củ chi	tin thường	25/08/2023
 105294	0.68	160	2.0	2.0		True			False			bình chánh	tin thường	15/08/2023
 86607	22.5	81	6.0	4.0		False			False		nguyễn văn thủ	quận 1	tin thường	15/12/2022
 87887	4.95	48	2.0	2.0	1	True	tây-nam		False			gò vấp	tin thường	30/12/2022
@@ -1833,13 +1833,13 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 112221	7.0	178	4.0	3.0	1	True			False		số 4	thủ đức	tin thường	01/11/2023
 111709	7.0	90			1	True			False			bình tân	tin thường	26/10/2023
 111453	8.7	94	9.0	6.0	4	True			False			tân bình	tin thường	24/10/2023
-108637	0.65	130				True			True			củ chi	tin thường	23/09/2023
+108637	0.65	130				True			True		phước hiệp	củ chi	tin thường	23/09/2023
 107613	3.3	22	2.0	3.0	2	False			False		nguyễn văn đậu	bình thạnh	tin thường	11/09/2023
 93789	0.005	357				False			True		tân thông hội	củ chi	tin thường	01/04/2023
 105309	0.011	70	2.0	2.0		False			False		đường song hành	quận 9	tin thường	15/08/2023
 105053	0.793	136				False			True			củ chi	tin thường	12/08/2023
 102493	6.0	74				False			False			bình tân	tin thường	19/07/2023
-101725	0.545	96	3.0	2.0	1	False			False			củ chi	tin thường	08/07/2023
+101725	0.545	96	3.0	2.0	1	False			False		trần thị cẩm	củ chi	tin thường	08/07/2023
 100445	0.01	80	3.0	4.0	2	True			False		số 8	quận 9	tin thường	27/06/2023
 97885	8.5	62	4.0	5.0	4	True	tây-nam		False		số 59	gò vấp	tin thường	26/05/2023
 97629		63	4	3	2	True			False			tân bình	tin thường	25/05/2023
@@ -3301,7 +3301,7 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 110735	5.2	80	3.0	3.0	2	True			True			tân phú	tin thường	16/10/2023
 92816	2.0	20	2.0	2.0	2	True	tây		False		108	quận 7	tin thường	18/03/2023
 94096	13.8	77	15.0	16.0	5	True			False			quận 7	tin thường	22/03/2023
-104336	0.492	152				True			True			củ chi	tin thường	04/08/2023
+104336	0.492	152				True			True		đường nguyễn thị thở	củ chi	tin thường	04/08/2023
 113296	1.88	55	1.0	1.0		False			False		đỗ xuân hợp	quận 9	tin thường	23/11/2023
 112016	5.95	150	4	6	4	False			False			bình thạnh	tin thường	26/10/2023
 110480	5.9	60	9.0	9.0	3	False			False			bình thạnh	tin thường	15/10/2023
@@ -3539,7 +3539,7 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 114325	15.8	376			2	False			True			bình tân	tin thường	09/11/2023
 113301	4.66	88	2.0	2.0		False	đông		True		lò lu	quận 9	tin thường	23/11/2023
 112789	23.0	160	5.0	6.0	3	False			False			bình thạnh	tin thường	06/11/2023
-112277	1.45	200				True	đông-nam		False			củ chi	tin thường	01/11/2023
+112277	1.45	200				True	đông-nam		False		1 sẹt đường trương thị khét	củ chi	tin thường	01/11/2023
 111509	9.2	80	6	5	3	False			True			bình tân	tin thường	24/10/2023
 108181	0.01	78	2.0	2.0		False			False		bình trưng	quận 2	tin thường	17/09/2023
 106901	2.2	51				False			False		cộng hòa	tân bình	tin thường	03/09/2023
@@ -3966,7 +3966,7 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 111532	8.7	52	4.0	5.0	4	True			False			quận 10	tin thường	23/10/2023
 111020	0.061	125	3.0	2.0		False	đông-bắc		False		nguyễn hữu cảnh	bình thạnh	tin thường	19/10/2023
 110508	6.8	122	3.0	3.0	1	True			True		bình chiểu	thủ đức	tin thường	14/10/2023
-108972	0.755	109				False			True			củ chi	tin thường	27/09/2023
+108972	0.755	109				False			True		trung lập hạ	củ chi	tin thường	27/09/2023
 98732	4.65	45	3.0	3.0	2	True			False			gò vấp	tin thường	07/06/2023
 108716		37	3		3	True			False			bình tân	tin thường	24/09/2023
 107948	5.5	66				True			False			bình tân	tin thường	14/09/2023
@@ -4991,7 +4991,7 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 107047	0.005	100				False			True			bình tân	tin thường	05/09/2023
 106791	3.8	79	1.0	1.0		True			False		số 1	thủ đức	tin thường	31/08/2023
 106535	1.9	23	1.0	1.0		True	tây-nam		False			quận 9	tin thường	29/08/2023
-106023	0.745	187				False			True			củ chi	tin thường	23/08/2023
+106023	0.745	187				False			True		tân an hội	củ chi	tin thường	23/08/2023
 103207	8.8	89				False			True			quận 8	tin thường	25/07/2023
 101159		53	1.0	1.0		False			False		đường võ chí công	quận 9	tin thường	04/07/2023
 87592	8.4	80	4.0	5.0	4	True			False		phạm văn chiêu	gò vấp	tin thường	27/12/2022
@@ -5545,7 +5545,7 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 97334		26	2			False			False			bình thạnh	tin thường	22/05/2023
 97078	0.58	60	2.0	2.0	1	True			False			hóc môn	tin thường	18/05/2023
 96566	6.98	50	3.0	3.0	4	False	đông-nam		False		số 4	gò vấp	tin thường	11/05/2023
-96310	0.014	455	2.0			False	đông		True			củ chi	tin thường	07/05/2023
+96310	0.014	455	2.0			False	đông		True		49 bùi thị lành	củ chi	tin thường	07/05/2023
 93494	4.9	68	3	3.0	3	True			False		hcm	quận 12	tin thường	28/03/2023
 93238	4.9	40			1	True			True			tân phú	tin thường	25/03/2023
 92214	6.5	50	4.0	5.0	2	False	đông-bắc		True		tô ngọc vân	quận 12	tin thường	15/03/2023
@@ -5789,7 +5789,7 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 105020	16.5	105	4	5	3	True			True			quận 8	tin thường	11/08/2023
 103740	9.8	180			2	False			False		số 4	thủ đức	tin thường	29/07/2023
 102972	0.69	150	3.0	2.0		True			True			bình chánh	tin thường	22/07/2023
-101436	0.537	350				True			False			củ chi	tin thường	07/07/2023
+101436	0.537	350				True			False		đoàn minh triết	củ chi	tin thường	07/07/2023
 101180	8.7	44	3	3	3	True			False			quận 10	tin thường	04/07/2023
 98364	4.65	60	2.0	2	2	True			True			tân phú	tin thường	02/06/2023
 91708	3.1	31			2	False			False			thủ đức	tin thường	08/03/2023
@@ -6877,7 +6877,7 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 117110	1.15	10	1.0	1.0	1	True			False	sổ đỏ/ sổ hồng	trần xuân soạn	quận 7	tin thường	22/08/2024
 117112	1.28	30	2.0	2.0	3	True			False	sổ đỏ/ sổ hồng	đường lê văn lương	nhà bè	tin thường	22/08/2024
 117115	4.15	49	2.0	2.0	2	False			False	sổ đỏ/ sổ hồng	tôn đản	quận 4	tin thường	22/08/2024
-117117	10.0	45	3.0	3.0		False			False	sổ đỏ/ sổ hồng		củ chi	tin thường	22/08/2024
+117117	10.0	45	3.0	3.0		False			False	sổ đỏ/ sổ hồng	đường số 122	củ chi	tin thường	22/08/2024
 117119	1.3	0	2.0	2.0	20	False	đông nam		False	sổ đỏ/ sổ hồng	bờ nhà thờ	bình chánh	tin thường	22/08/2024
 117123	8.8	56	5.0	6.0	4	False			False	sổ đỏ/ sổ hồng	đường đặng thùy trâm	bình thạnh	tin thường	22/08/2024
 117125	10.0	45	3.0	3.0		False			False	sổ đỏ/ sổ hồng	an nhơn tây	củ chi	tin thường	22/08/2024
@@ -7196,7 +7196,7 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 104350	0.003	40				False			True		số 1	bình chánh	tin thường	04/08/2023
 103582	0.06	200			4	False			True			bình tân	tin thường	28/07/2023
 103326	5.0	31			2	False			False			quận 10	tin thường	27/07/2023
-102558	0.415	120				True			False			củ chi	tin thường	19/07/2023
+102558	0.415	120				True			False		hồ văng tắng	củ chi	tin thường	19/07/2023
 102302	5.55	44	3	2	1	False			False			quận 8	tin thường	17/07/2023
 102046	2.25	70				False			False			tân phú	tin thường	13/07/2023
 100766	6.4	80	2.0	2.0	1	False			True			quận 8	tin thường	29/06/2023
@@ -7620,7 +7620,7 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 100466		20	2.0	3.0	2	False	bắc		False		trương đăng quế	gò vấp	tin thường	27/06/2023
 99698	2.5	50				True			True		đỗ xuân hợp	quận 9	tin thường	18/06/2023
 88178	2.0	39	2.0	1.0	2	False			False			quận 10	tin thường	06/01/2023
-98418	0.45	250				False			True			củ chi	tin thường	03/06/2023
+98418	0.45	250				False			True		minh long - hàn quốc	củ chi	tin thường	03/06/2023
 97906	4.4	58	2.0	2	4	True			True			tân phú	tin thường	27/05/2023
 96882	3.0	57				False			False		nam hòa	quận 9	tin thường	16/05/2023
 94834	1.75	81				False			False			quận 12	tin thường	14/04/2023
@@ -7711,7 +7711,7 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 113012	0.013	72	2.0	2.0		False			True		bế văn cấm	quận 7	tin thường	28/11/2023
 112756	4.5	56	3.0	3.0	2	True			False			tân phú	tin thường	06/11/2023
 111988	7.0	100			2	False	tây		False		nguyễn văn khối	gò vấp	tin thường	26/10/2023
-108916	0.755	213				False			True			củ chi	tin thường	26/09/2023
+108916	0.755	213				False			True		phước hiệp	củ chi	tin thường	26/09/2023
 108660	23.0	85	6.0	7.0	5	False			True			quận 6	tin thường	22/09/2023
 107636	3.05	18	2		1	False			False		thống nhất	gò vấp	tin thường	12/09/2023
 107124	5.7	66				True			False		thành phố hồ chí minh	bình tân	tin thường	07/09/2023
@@ -8042,7 +8042,7 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 107973	5.0	56			1	True			False			bình tân	tin thường	14/09/2023
 107461		56	3	2	1	True			False		miếu bình đông	bình tân	tin thường	10/09/2023
 107205	3.4	54	1			False	đông-nam		False		nguyễn xiển	quận 9	tin thường	07/09/2023
-106181	0.76	100				False			False			củ chi	tin thường	24/08/2023
+106181	0.76	100				False			False		tân an hội	củ chi	tin thường	24/08/2023
 105925	3.35	87	3.0	2.0		False			False		đường võ chí công	quận 9	tin thường	21/08/2023
 105669	5.68	115	4.0	3.0	2	True	tây-bắc		False			bình tân	tin thường	18/08/2023
 105413	3.4	25	2.0	1.0		False	tây		False			bình thạnh	tin thường	16/08/2023
@@ -9465,7 +9465,7 @@ id	price	area	bedrooms	wc	n_floors	car_place	house_orientation	furniture	facade	
 97277	5.6	72	3.0	3.0	2	True			False			gò vấp	tin thường	21/05/2023
 110077	6.5	47	4.0	5.0	4	True			False		lê văn duyệt phườn 3	bình thạnh	tin thường	10/10/2023
 108541	4.35	64			1	True			False			bình tân	tin thường	21/09/2023
-107261	0.645	110				False			True			củ chi	tin thường	07/09/2023
+107261	0.645	110				False			True		thái mỹ	củ chi	tin thường	07/09/2023
 106493		38	5.0	4.0	2	False			False			phú nhuận	tin thường	28/08/2023
 106237	3.3	28	2		3	False			True			bình tân	tin thường	24/08/2023
 104445	15.5	110			3	True			True			phú nhuận	tin thường	05/08/2023

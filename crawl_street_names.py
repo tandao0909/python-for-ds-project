@@ -1,3 +1,22 @@
+"""
+This script crawls street names from specified URLs and stores them in a JSON format.
+
+Modules:
+    requests: To make HTTP requests to fetch the web pages.
+    bs4 (BeautifulSoup): To parse HTML content and extract street names.
+    json: To handle JSON operations.
+
+Functions:
+    get_street_names():
+        Crawls street names from predefined URLs and organizes them by district.
+        Returns:
+            dict: A dictionary where keys are district names and values are lists of street names.
+
+Usage:
+    Call the `get_street_names` function to retrieve street names from the specified URLs.
+    The function returns a dictionary with district names as keys and lists of street names as values.
+"""
+
 import requests
 from bs4 import BeautifulSoup
 import json
@@ -62,7 +81,7 @@ def get_street_names():
             table = tables[1]
             tr_tags = table.find_all("tr")
             for tr in tr_tags:
-                td_tags = table.find_all("td")
+                td_tags = tr.find_all("td")
                 for i, td in enumerate(td_tags):
                     if i % 2 == 1:
                         tmp = td.text.strip().lower()
@@ -70,7 +89,7 @@ def get_street_names():
                             continue
                         if "đường" in tmp:
                             tmp = tmp.replace("đường", "").strip()
-                            if len(tmp) == 1:  # just 1 character
+                            if len(tmp) <= 1:  # just 1 character
                                 continue
                         street_names[district].append(tmp)
         else:
