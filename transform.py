@@ -1,3 +1,37 @@
+"""
+This script processes and transforms a housing dataset by applying various data cleaning and feature extraction functions.
+Modules:
+    pandas (pd): For handling DataFrame operations.
+    re: For regular expression operations.
+    os: For interacting with the operating system.
+    json: For handling JSON data.
+    crawl_street_names: Custom module to get street names.
+Functions:
+    process_df_format(df: pd.DataFrame) -> pd.DataFrame:
+    process_number(description: str, pattern: str) -> pd.NA:
+    process_boolean(description: str, pattern: str) -> bool:
+    process_price(price: str) -> float:
+    process_bedroom(description: str) -> pd.NA:
+    process_bathroom(description: str) -> pd.NA:
+    process_nfloor(description: str) -> pd.NA:
+    process_car_place(description: str) -> bool:
+    process_facade_step1(description: str) -> bool:
+    process_facade_step2(description: str) -> bool:
+    process_district(text: str) -> str:
+        Extract district information from text input.
+    process_legal(text: str) -> str:
+        Transform invalid value to pd.NA, valid values are ["sổ đỏ/ sổ hồng", "hợp đồng mua bán"].
+    insert_so(match):
+        Insert "số" between "đường" and "x", where x is a digit.
+    insert_so_into_street(address):
+        Find and replace "đường x" by "đường số x".
+    process_street(address, district, street_names):
+    transform(df: pd.DataFrame, to_save=False, OUTPUT_PATH="data/housing.csv") -> pd.DataFrame:
+        Apply all process functions to input DataFrame, and drop useless columns.
+Usage:
+    Run the script directly to process the housing dataset from "9882.csv" and save the transformed data to "data/housing.csv".
+"""
+
 import pandas as pd # for DataFrame
 import re # for regular expression
 import os
@@ -269,7 +303,7 @@ def transform(df: pd.DataFrame, to_save = False, OUTPUT_PATH="data/housing.csv")
         (process_price, 'price', 'price'),
         (process_bedroom, 'description', 'new_bedrooms'),
         (process_bathroom, 'description', 'new_bathrooms'),
-        (process_bedroom, 'title', 'new_bedrooms2'),
+        (process_bedroom, 'title', 'new_bedrooms2'), # apply process on both of title and description then combine it
         (process_bathroom, 'title', 'new_bathrooms2'),
         (process_nfloor, 'description', 'n_floors'),
         (process_nfloor, 'title', 'n_floors2'),
@@ -293,19 +327,21 @@ def transform(df: pd.DataFrame, to_save = False, OUTPUT_PATH="data/housing.csv")
     # make facade column
     try:
         print("Processing facade")
-        df['facade1'] = df['facade1_step1'] & ~df['facade1_step2']
-        df['facade2'] = df['facade2_step1'] & ~df['facade2_step2']
-        df['facade'] = df['facade1'] | df['facade2']
+        df['facade1'] = df['facade1_step1'] & ~df['facade1_step2'] # process on description
+        df['facade2'] = df['facade2_step1'] & ~df['facade2_step2'] # process on title
+        df['facade'] = df['facade1'] | df['facade2'] # combine
         print("Processing car_place")
-        df['car_place'] = df['car_place1'] | df['car_place2']
+        df['car_place'] = df['car_place1'] | df['car_place2'] # combine (car_place1 is description, car_place2 is title)
     except Exception as e:
-        print(f"Error calculating 'facade': {e}")
+        print(f"Error processing 'facade' and 'car_place': {e}")
 
+    # combine description process with title process on numeric columns
     df['bedrooms'] = df['bedrooms'].fillna(df['new_bedrooms'])
     df['bedrooms'] = df['bedrooms'].fillna(df['new_bedrooms2'])
     df['wc'] = df['wc'].fillna(df['new_bathrooms'])
     df['wc'] = df['wc'].fillna(df['new_bathrooms2'])
     df['n_floors'] = df['n_floors'].fillna(df['n_floors2'])
+
     # process street
     if not os.path.exists('street_names.json'): # check if json file is exists
         print("street_names.json not found, calling get_street_names")
@@ -316,8 +352,10 @@ def transform(df: pd.DataFrame, to_save = False, OUTPUT_PATH="data/housing.csv")
         with open('street_names.json', 'r', encoding='utf-8') as f:
             street_names = json.load(f)
     print("Processing street")
-    df['street'] = df.apply(lambda row: process_street(row['location2'], row['district'], street_names), axis=1)
-
+    try:
+        df['street'] = df.apply(lambda row: process_street(row['location2'], row['district'], street_names), axis=1)
+    except Exception as e:
+        print(f"Error when processing 'street': {e}")
     columns_to_use = [
         "id",
         "price",
