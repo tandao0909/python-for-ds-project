@@ -230,7 +230,7 @@ def process_street(address, district, street_names):
         str or pd.NA: The extracted street name if found, otherwise pd.NA if the address is null or contains certain keywords.
     """
 
-    test_case = ["quận", "huyện", "xã", "phường", "tphcm", district, "mức giá", "dự án"]
+    test_case = ["quận", "huyện", "xã", "phường", "thành phố", "tphcm", district, "mức giá", "dự án", "hồ chí minh"]
     if pd.isnull(address):
         return pd.NA
     else:
@@ -250,7 +250,7 @@ def process_street(address, district, street_names):
 
     return street
 
-def transform(df: pd.DataFrame) -> pd.DataFrame:
+def transform(df: pd.DataFrame, to_save = False, OUTPUT_PATH="data/housing.csv") -> pd.DataFrame:
     """
     Apply all process function to input DataFrame, and drop useless column.
 
@@ -324,6 +324,9 @@ def transform(df: pd.DataFrame) -> pd.DataFrame:
         "date"
     ]
     df = df[columns_to_use]
+    if to_save:
+        df.to_csv(OUTPUT_PATH, sep='\t', index=False)
+        print(f"Saved to {OUTPUT_PATH}")
     print("Done!")
     return df
 
@@ -331,8 +334,6 @@ def transform(df: pd.DataFrame) -> pd.DataFrame:
 if __name__ == "__main__":
     load_dotenv()
     df = pd.read_csv(RAW_DATA_PATH, sep='\t')
-    df = transform(df)
+    df = transform(df, to_save=True)
     print(df.head())
-    print(df.columns)
-    df.to_csv(OUTPUT_PATH)
-    print(df.district.unique())
+    print(f"Transformed data has {len(df)} rows")
