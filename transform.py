@@ -4,9 +4,6 @@ import os
 import json
 from crawl_street_names import get_street_names
 
-RAW_DATA_PATH = "9882.csv"
-OUTPUT_PATH = "housing.csv"
-
 def process_df_format(df: pd.DataFrame) -> pd.DataFrame:
     """
     Process a DataFrame by converting column names to snake_case and converting 
@@ -73,7 +70,7 @@ def process_price(price: str) -> float:
     Returns:
     float or pd.NA: The float value of the price in billions (tỷ), or pd.NA if the format is invalid.
     """
-    if pd.isnull(price): # if input is null return pd.NA
+    if pd.isnull(price) or "tháng" in price: # if input is null return pd.NA
         return pd.NA
     numbers = re.findall(r"\d+", price) # find all digits in price. ex: 12 tỷ 500 triệu -> [12, 5]
     if "tỷ" in price:
@@ -82,7 +79,10 @@ def process_price(price: str) -> float:
         elif len(numbers) == 2:
             return float(numbers[0]) + float(numbers[1]) / 1000  # ex: 12 tỷ 500 triệu = 12.5
     elif len(numbers) == 1:
-        return float(numbers[0]) / 1000  # ex: 800 triệu = 0.8 tỷ
+        number = float(numbers[0])
+        if number <= 500: # < 500 million -> exactly in lease
+            return pd.NA
+        return number / 1000  # ex: 800 triệu = 0.8 tỷ
     return pd.NA
 
 def process_bedroom(description: str) -> pd.NA:
@@ -121,6 +121,10 @@ def process_nfloor(description: str) -> pd.NA:
     Returns:
     pd.NA or int: The number of floors, or pd.NA if no match is found.
     """
+    level4 = ["cấp 4", "c4", "cap 4", "cap4"]
+    for word in level4:
+        if word in description:
+            return 1
     pattern = r"\d+\s?(lầu|tầng|tấm|tang|lau|tam)"
     return process_number(description, pattern)
 
@@ -206,10 +210,8 @@ def process_legal(text: str) -> str:
     else:
         return text
 
-
 def insert_so(match): # Insert "số" between "đường" and "x", x is (0, 1, 2, ... 9)
     return f"đường số {match.group(1)}"
-
 
 def insert_so_into_street(address):
     # Find and replace "đường x" by "đường số x"
@@ -267,10 +269,16 @@ def transform(df: pd.DataFrame, to_save = False, OUTPUT_PATH="data/housing.csv")
         (process_price, 'price', 'price'),
         (process_bedroom, 'description', 'new_bedrooms'),
         (process_bathroom, 'description', 'new_bathrooms'),
+        (process_bedroom, 'title', 'new_bedrooms2'),
+        (process_bathroom, 'title', 'new_bathrooms2'),
         (process_nfloor, 'description', 'n_floors'),
-        (process_car_place, 'description', 'car_place'),
-        (process_facade_step1, 'description', 'facade_step1'),
-        (process_facade_step2, 'description', 'facade_step2'),
+        (process_nfloor, 'title', 'n_floors2'),
+        (process_car_place, 'description', 'car_place1'),
+        (process_car_place, 'title', 'car_place2'),
+        (process_facade_step1, 'description', 'facade1_step1'),
+        (process_facade_step2, 'description', 'facade1_step2'),
+        (process_facade_step1, 'title', 'facade2_step1'),
+        (process_facade_step2, 'title', 'facade2_step2'),
         (process_district, 'location1', 'district'),
         (process_legal, 'legal', 'legal')
     ]
@@ -285,15 +293,21 @@ def transform(df: pd.DataFrame, to_save = False, OUTPUT_PATH="data/housing.csv")
     # make facade column
     try:
         print("Processing facade")
-        df['facade'] = (df['facade_step1'] == True) & (df['facade_step2'] == False)
+        df['facade1'] = df['facade1_step1'] & ~df['facade1_step2']
+        df['facade2'] = df['facade2_step1'] & ~df['facade2_step2']
+        df['facade'] = df['facade1'] | df['facade2']
+        print("Processing car_place")
+        df['car_place'] = df['car_place1'] | df['car_place2']
     except Exception as e:
         print(f"Error calculating 'facade': {e}")
 
     df['bedrooms'] = df['bedrooms'].fillna(df['new_bedrooms'])
+    df['bedrooms'] = df['bedrooms'].fillna(df['new_bedrooms2'])
     df['wc'] = df['wc'].fillna(df['new_bathrooms'])
-
+    df['wc'] = df['wc'].fillna(df['new_bathrooms2'])
+    df['n_floors'] = df['n_floors'].fillna(df['n_floors2'])
     # process street
-    if not os.path.exists('street_names.json'): # check if json file is existed
+    if not os.path.exists('street_names.json'): # check if json file is exists
         print("street_names.json not found, calling get_street_names")
         street_names = get_street_names()
         with open('street_names.json', 'w', encoding='utf-8') as f:
@@ -322,6 +336,8 @@ def transform(df: pd.DataFrame, to_save = False, OUTPUT_PATH="data/housing.csv")
         "date"
     ]
     df = df[columns_to_use]
+    df.dropna(subset=["price"], inplace=True)
+    df.reset_index(drop=True, inplace=True)
     if to_save:
         df.to_csv(OUTPUT_PATH, sep='\t', index=False)
         print(f"Saved to {OUTPUT_PATH}")
@@ -330,6 +346,7 @@ def transform(df: pd.DataFrame, to_save = False, OUTPUT_PATH="data/housing.csv")
 
 
 if __name__ == "__main__":
+    RAW_DATA_PATH = "9882.csv"
     df = pd.read_csv(RAW_DATA_PATH, sep='\t')
     df = transform(df, to_save=True)
     print(df.head())
