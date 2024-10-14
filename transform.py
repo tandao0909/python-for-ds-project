@@ -3,9 +3,10 @@ import re # for regular expression
 from dotenv import load_dotenv # for load environment variables
 from openai import OpenAI 
 import os
+import json
 
-RAW_DATA_PATH = "raw_data.csv"
-OUTPUT_PATH = "data/housing.csv"
+RAW_DATA_PATH = "9882.csv"
+OUTPUT_PATH = "housing.csv"
 
 def process_df_format(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -206,60 +207,35 @@ def process_legal(text: str) -> str:
     else:
         return text
 
-def process_street(address):
-    """
-    Extracts the street name from a given address string using OpenAI's GPT model.
-    This function processes an address string to extract only the street name, excluding house numbers, wards, districts, and cities. It uses OpenAI's GPT model to perform the extraction based on specific rules.
-    
-    Parameters:
-    address (str): The address string to be processed.
-    
-    Returns:
-    str or None: The extracted street name, or None if the address does not contain a street name or contains disallowed content.
-    """
 
+def insert_so(match): # Insert "số" between "đường" and "x", x is (0, 1, 2, ... 9)
+    return f"đường số {match.group(1)}"
+
+
+def insert_so_into_street(address):
+    # Find and replace "đường x" by "đường số x"
+    return re.sub(r'đường (\d+)', insert_so, address)
+
+def process_street(address, district, street_names):
+    test_case = ["quận", "huyện", "xã", "phường", "tphcm", district, "mức giá", "dự án"]
     if pd.isnull(address):
         return pd.NA
-        
-    env_openai_key = os.getenv("OPENAI_API_KEY") # get API_KEY
+    else:
+        address = insert_so_into_street(address)
 
-    system_input = """
-    Hãy đóng vai là một người phân tích dữ liệu chuyên nghiệp và hoàn thành các yêu cầu sau của tôi. 
+    flag = 0
+    # Check if district is in street_names dictionary
+    if district in street_names:
+        for street in street_names[district]:
+            if street in address:
+                return street
+    if flag == 0:  # still can't find
+        street = address.split(",")[0]
+        for word in test_case:
+            if word in street:
+                return pd.NA
 
-    Tôi sẽ đưa cho bạn một chuỗi chứa nội dung có thể về địa chỉ, nhiệm vụ của bạn là lấy duy nhất tên đường trong địa chỉ đó (không bao gồm số nhà, phường, quận, thành phố). Sẽ có những yêu cầu cụ thể sau: 
-    - Đường có thể có số, ví dụ "đường số 8", thì bạn phải trả về "đường số 8".
-    - Một vài chuỗi sẽ có số nhà, bạn cần loại bỏ, ví dụ "1928 đường phan văn trị" hoặc "1928 phan văn trị" thì trả về "đường phan văn trị"
-    - Chuỗi chỉ có thông tin phường, quận, thành phố mà không có tên đường thì trả về None
-    - Chuỗi không đề cập gì hết thì trả về None
-    - Chuỗi chứa từ "mức giá" thì trả về None
-
-    Trả về đoạn chuỗi duy nhất thể hiện tên đường, không giải thích gì thêm"""
-
-    user_input = f"Đoạn chuỗi là: {address}"
-    
-    client = OpenAI(api_key = env_openai_key)
-
-    completion = client.chat.completions.create(
-        model = "gpt-4o-mini",
-        temperature = 0.2, # precision > creation
-        max_tokens = 15, # for about 10 words
-        n=1, # number of answers
-        messages = [
-            {
-                "role": "system",
-                "content": system_input
-            },
-            {
-                "role": "user",
-                "content":user_input
-            }
-        ]
-    )
-    
-    if completion.choices:
-        extracted_street = completion.choices[0].message['content']
-        return extracted_street.strip() or None  # Return None if empty string
-    return None  # Return None if no choices available
+    return street
 
 def transform(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -271,6 +247,7 @@ def transform(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
     pd.DataFrame: Returns transformed DataFrame.
     """
+    print("Formating data ...")
     df = process_df_format(df)
 
     # make a list contains functions, columns to be processed and new columns ill be called
@@ -289,12 +266,14 @@ def transform(df: pd.DataFrame) -> pd.DataFrame:
     # loop through processes list and apply
     for func, process_column, new_column in processes:
         try:
+            print(f"Processing {new_column}")
             df[new_column] = df[process_column].apply(func)
         except Exception as e:
             print(f"Error in function '{func}' on column '{process_column}': {e}")
 
     # make facade column
     try:
+        print("Processing facade")
         df['facade'] = (df['facade_step1'] == True) & (df['facade_step2'] == False)
     except Exception as e:
         print(f"Error calculating 'facade': {e}")
@@ -302,8 +281,11 @@ def transform(df: pd.DataFrame) -> pd.DataFrame:
     df['bedrooms'] = df['bedrooms'].fillna(df['new_bedrooms'])
     df['wc'] = df['wc'].fillna(df['new_bathrooms'])
 
-    # create tmp column
-    df['street'] = pd.NA
+    # create tmp column, it will be processed later
+    with open('street_names.json', 'r', encoding='utf-8') as f:
+        street_names = json.load(f)
+    print("Processing street")
+    df['street'] = df.apply(lambda row: process_street(row['location2'], row['district'], street_names), axis=1)
 
     columns_to_use = [
         "id",
@@ -323,6 +305,7 @@ def transform(df: pd.DataFrame) -> pd.DataFrame:
         "date"
     ]
     df = df[columns_to_use]
+    print("Done!")
     return df
 
 
@@ -332,3 +315,5 @@ if __name__ == "__main__":
     df = transform(df)
     print(df.head())
     print(df.columns)
+    df.to_csv(OUTPUT_PATH)
+    print(df.district.unique())
