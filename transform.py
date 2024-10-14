@@ -1,7 +1,5 @@
 import pandas as pd # for DataFrame
 import re # for regular expression
-from dotenv import load_dotenv # for load environment variables
-from openai import OpenAI 
 import os
 import json
 from crawl_street_names import get_street_names
@@ -110,7 +108,7 @@ def process_bathroom(description: str) -> pd.NA:
     Returns:
     pd.NA or int: The number of bathrooms, or pd.NA if no match is found.
     """
-    pattern = r"\d+\s?(wc|toilet|vs|vệ sinh|ve sinh)"
+    pattern = r"\d+\s?(wc|toilet|vs|vệ sinh|ve sinh|nhà vệ sinh|nhà vs)"
     return process_number(description, pattern)
 
 def process_nfloor(description: str) -> pd.NA:
@@ -123,7 +121,7 @@ def process_nfloor(description: str) -> pd.NA:
     Returns:
     pd.NA or int: The number of floors, or pd.NA if no match is found.
     """
-    pattern = r"\d+\s?(lầu|tầng|tấm)"
+    pattern = r"\d+\s?(lầu|tầng|tấm|tang|lau|tam)"
     return process_number(description, pattern)
 
 def process_car_place(description: str) -> bool:
@@ -151,7 +149,7 @@ def process_facade_step1(description: str) -> bool:
     bool or pd.NA: Returns True if the property has a facade facing the street, 
                    False otherwise. Returns pd.NA if input is null.
     """
-    pattern = r"mặt tiền|mặt phố|mặt đường"
+    pattern = r"mặt tiền|mặt phố|mặt đường|mat tien"
     return process_boolean(description, pattern)
 
 def process_facade_step2(description: str) -> bool:
@@ -332,7 +330,6 @@ def transform(df: pd.DataFrame, to_save = False, OUTPUT_PATH="data/housing.csv")
 
 
 if __name__ == "__main__":
-    load_dotenv()
     df = pd.read_csv(RAW_DATA_PATH, sep='\t')
     df = transform(df, to_save=True)
     print(df.head())
