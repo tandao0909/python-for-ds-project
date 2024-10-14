@@ -4,6 +4,7 @@ from dotenv import load_dotenv # for load environment variables
 from openai import OpenAI 
 import os
 import json
+from crawl_street_names import get_street_names
 
 RAW_DATA_PATH = "9882.csv"
 OUTPUT_PATH = "housing.csv"
@@ -217,6 +218,18 @@ def insert_so_into_street(address):
     return re.sub(r'đường (\d+)', insert_so, address)
 
 def process_street(address, district, street_names):
+    """
+    Processes the given address to extract the street name.
+
+    Parameters:
+        address (str): The full address string.
+        district (str): The district name to check within the street_names dictionary.
+        street_names (dict): A dictionary where keys are district names and values are lists of street names.
+
+    Returns:
+        str or pd.NA: The extracted street name if found, otherwise pd.NA if the address is null or contains certain keywords.
+    """
+
     test_case = ["quận", "huyện", "xã", "phường", "tphcm", district, "mức giá", "dự án"]
     if pd.isnull(address):
         return pd.NA
@@ -281,9 +294,15 @@ def transform(df: pd.DataFrame) -> pd.DataFrame:
     df['bedrooms'] = df['bedrooms'].fillna(df['new_bedrooms'])
     df['wc'] = df['wc'].fillna(df['new_bathrooms'])
 
-    # create tmp column, it will be processed later
-    with open('street_names.json', 'r', encoding='utf-8') as f:
-        street_names = json.load(f)
+    # process street
+    if not os.path.exists('street_names.json'): # check if json file is existed
+        print("street_names.json not found, calling get_street_names")
+        street_names = get_street_names()
+        with open('street_names.json', 'w', encoding='utf-8') as f:
+            json.dump(street_names, f, ensure_ascii=False, indent=4)
+    else:
+        with open('street_names.json', 'r', encoding='utf-8') as f:
+            street_names = json.load(f)
     print("Processing street")
     df['street'] = df.apply(lambda row: process_street(row['location2'], row['district'], street_names), axis=1)
 

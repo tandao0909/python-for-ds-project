@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 
-if __name__ == "__main__":
+def get_street_names():
     street_links = [
     "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-binh-tan-thanh-pho-ho-chi-minh-37336.html",
     "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-tan-phu-thanh-pho-ho-chi-minh-37335.html",
@@ -86,5 +86,4 @@ if __name__ == "__main__":
                         continue
                 street_names[district].append(tmp)
 
-    with open('street_names.json', 'w', encoding='utf-8') as f:
-        json.dump(street_names, f, ensure_ascii=False, indent=4)
+    return street_names
