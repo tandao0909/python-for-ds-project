@@ -1,50 +1,31 @@
-"""
-This script crawls street names from specified URLs and stores them in a JSON format.
-
-Modules:
-    requests: To make HTTP requests to fetch the web pages.
-    bs4 (BeautifulSoup): To parse HTML content and extract street names.
-    json: To handle JSON operations.
-
-Functions:
-    get_street_names():
-        Crawls street names from predefined URLs and organizes them by district.
-        Returns:
-            dict: A dictionary where keys are district names and values are lists of street names.
-
-Usage:
-    Call the `get_street_names` function to retrieve street names from the specified URLs.
-    The function returns a dictionary with district names as keys and lists of street names as values.
-"""
-
 import requests
 from bs4 import BeautifulSoup
 import json
 
-def get_street_names():
+def get_street_names(verify_ssl=True):
     street_links = [
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-binh-tan-thanh-pho-ho-chi-minh-37336.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-tan-phu-thanh-pho-ho-chi-minh-37335.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-tan-binh-thanh-pho-ho-chi-minh-37334.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-phu-nhuan-thanh-pho-ho-chi-minh-37333.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-go-vap-thanh-pho-ho-chi-minh-37332.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-thu-duc-thanh-pho-ho-chi-minh-37331.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-binh-thanh-thanh-pho-ho-chi-minh-37330.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-12-thanh-pho-ho-chi-minh-37329.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-11-thanh-pho-ho-chi-minh-37328.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-10-thanh-pho-ho-chi-minh-37327.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-9-thanh-pho-ho-chi-minh-37326.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-8-thanh-pho-ho-chi-minh-37325.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-7-thanh-pho-ho-chi-minh-37324.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-6-thanh-pho-ho-chi-minh-37323.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-5-thanh-pho-ho-chi-minh-37322.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-4-thanh-pho-ho-chi-minh-37321.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-3-thanh-pho-ho-chi-minh-37320.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-2-thanh-pho-ho-chi-minh-37319.html",
-    "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-1-thanh-pho-ho-chi-minh-37318.html",
-    "https://displaysolution.vn/tin-tuc/danh-sach-nhung-ten-duong-thuoc-huyen-cu-chi-41046.html",
-    "https://displaysolution.vn/tin-tuc/danh-sach-nhung-ten-duong-thuoc-huyen-binh-chanh-41049.html",
-    "https://displaysolution.vn/tin-tuc/danh-sach-nhung-ten-duong-thuoc-huyen-hoc-mon-34093.html"
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-binh-tan-thanh-pho-ho-chi-minh-37336.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-tan-phu-thanh-pho-ho-chi-minh-37335.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-tan-binh-thanh-pho-ho-chi-minh-37334.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-phu-nhuan-thanh-pho-ho-chi-minh-37333.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-go-vap-thanh-pho-ho-chi-minh-37332.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-thu-duc-thanh-pho-ho-chi-minh-37331.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-binh-thanh-thanh-pho-ho-chi-minh-37330.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-12-thanh-pho-ho-chi-minh-37329.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-11-thanh-pho-ho-chi-minh-37328.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-10-thanh-pho-ho-chi-minh-37327.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-9-thanh-pho-ho-chi-minh-37326.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-8-thanh-pho-ho-chi-minh-37325.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-7-thanh-pho-ho-chi-minh-37324.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-6-thanh-pho-ho-chi-minh-37323.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-5-thanh-pho-ho-chi-minh-37322.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-4-thanh-pho-ho-chi-minh-37321.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-3-thanh-pho-ho-chi-minh-37320.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-2-thanh-pho-ho-chi-minh-37319.html",
+        "https://nguyenhopphat.vn/danh-sach-ten-duong-tp.hcm/danh-sach-cac-ten-duong-tai-quan-1-thanh-pho-ho-chi-minh-37318.html",
+        "https://displaysolution.vn/tin-tuc/danh-sach-nhung-ten-duong-thuoc-huyen-cu-chi-41046.html",
+        "https://displaysolution.vn/tin-tuc/danh-sach-nhung-ten-duong-thuoc-huyen-binh-chanh-41049.html",
+        "https://displaysolution.vn/tin-tuc/danh-sach-nhung-ten-duong-thuoc-huyen-hoc-mon-34093.html"
     ]
 
     street_names = {
@@ -74,35 +55,38 @@ def get_street_names():
 
     for district, link in zip(street_names.keys(), street_links):
         print(f"Crawling {district}...")
-        req = requests.get(link)
+        req = requests.get(link, verify=verify_ssl)
         soup = BeautifulSoup(req.text, 'html.parser')
         if district in ["củ chi", "bình chánh", "hóc môn"]:
             tables = soup.find_all("tbody")
-            table = tables[1]
-            tr_tags = table.find_all("tr")
-            for tr in tr_tags:
-                td_tags = tr.find_all("td")
-                for i, td in enumerate(td_tags):
+            street_table = tables[1]
+            for row in street_table.find_all("tr"):
+                cells = row.find_all("td")
+                for i, cell in enumerate(cells):
                     if i % 2 == 1:
-                        tmp = td.text.strip().lower()
-                        if tmp == "":  # empty string
+                        street_name = ' '.join(cell.text.strip().lower().split())  # Remove extra spaces
+                    if not street_name:  # empty string
+                        continue
+                    if "đường" in street_name:
+                        street_name = street_name.replace("đường", "").strip()
+                        if len(street_name) <= 1:  # just 1 character
                             continue
-                        if "đường" in tmp:
-                            tmp = tmp.replace("đường", "").strip()
-                            if len(tmp) <= 1:  # just 1 character
-                                continue
-                        street_names[district].append(tmp)
+                    street_names[district].append(street_name)
         else:
             table = soup.find("tbody")
-            td_tags = table.find_all("td")
-            for td in td_tags:
-                tmp = td.text.strip().lower()
-                if tmp == "": # empty string 
+            for td in table.find_all("td"):
+                street_name = ' '.join(td.text.strip().lower().split())  # Remove extra spaces
+                if not street_name or len(street_name) == 1:
                     continue
-                if "đường" in tmp:
-                    tmp = tmp.replace("đường", "").strip()
-                    if len(tmp) == 1: # just 1 character
+                if "đường" in street_name:
+                    street_name = street_name.replace("đường", "").strip()
+                    if len(street_name) == 1:  # just 1 character
                         continue
-                street_names[district].append(tmp)
+                street_names[district].append(street_name)
 
     return street_names
+
+if __name__ == "__main__":
+    street_names = get_street_names(verify_ssl=False)
+    with open('street_names.json', 'w', encoding='utf-8') as f:
+        json.dump(street_names, f, ensure_ascii=False, indent=4)
