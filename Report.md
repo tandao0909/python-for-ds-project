@@ -1,12 +1,314 @@
 # Table of contents
 
 - [Table of contents](#table-of-contents)
+- [I. Data Crawling and Preprocessing](#i-data-crawling-and-preprocessing)
+  - [Chuyển đổi dữ liệu](#chuyển-đổi-dữ-liệu)
+    - [Mục tiêu](#mục-tiêu)
+    - [Xử lý định dạng của Data Frame](#xử-lý-định-dạng-của-data-frame)
+    - [Trích xuất dữ liệu từ cột `Description` và `Title`](#trích-xuất-dữ-liệu-từ-cột-description-và-title)
+      - [Tổng quan, ý tưởng](#tổng-quan-ý-tưởng)
+      - [Xử lý các dữ liệu số](#xử-lý-các-dữ-liệu-số)
+      - [Tạo ra các cột dữ liệu mới hữu ích cho bài toán](#tạo-ra-các-cột-dữ-liệu-mới-hữu-ích-cho-bài-toán)
 - [II. EDA và Feature Engineering](#ii-eda-và-feature-engineering)
   - [3 Xử lý và làm sạch dữ liệu](#3-xử-lý-và-làm-sạch-dữ-liệu)
     - [3.1. `DataCleaner` class](#31-datacleaner-class)
       - [3.1.1. Chức năng chính của `DataCleaner`](#311-chức-năng-chính-của-datacleaner)
       - [3.1.2. Các phương thức chính của `DataCleaner`](#312-các-phương-thức-chính-của-datacleaner)
     - [3.2. Các hàm khác](#32-các-hàm-khác)
+
+# I. Data Crawling and Preprocessing
+
+## Chuyển đổi dữ liệu
+
+### Mục tiêu
+
+Sau khi mà cào dữ liệu từ web xong, chúng tôi tiến hành chuyển hóa dữ liệu thô thế này:
+
+| Unnamed: 0 | Date       | Type       | ID     | Title                                         | Location1          | Location2                       | Description                                   | Area | Bedrooms | Legal          | WC   | House orientation | Furniture | Price         |
+|------------|------------|------------|--------|-----------------------------------------------|--------------------|---------------------------------|-----------------------------------------------|------|----------|----------------|------|-------------------|-----------|---------------|
+| 2          | 22/07/2024 | Tin Thường | 115827 | Bán nhà 2.6 tỷ Lý Thường Kiệt Q10, NHÀ ĐẸP 3 Tầng | Quận 10, Hồ Chí Minh | Đường Lý Thường Kiệt, 14       | + Kết cấu: Nhà 3 tầng, 3WC, có thể ở ngay.   | 16   | 4.0      | Sổ đỏ/ Sổ hồng | 3.0  | NaN               | NaN       | 2 tỷ 600 triệu |
+| 3          | 22/07/2024 | Tin Thường | 115833 | Nhà Quận 6 Chỉ 3 Tỷ - DTSD >150m² - 5 TẦNG BTC | Quận 6, Hồ Chí Minh | Phường 14, Quận 6, Hồ Chí Minh | Nhà Quận 6 Chỉ 3 Tỷ - DTSD >150m² - 5 TẦNG BTC | 32   | 4.0      | Sổ đỏ/ Sổ hồng | NaN  | NaN               | NaN       | 3 tỷ          |
+| 4          | 22/07/2024 | Tin Thường | 115834 | Bán nhà HẺM XE HƠI TRÁNH TÂN HOÁ, chỉ 4.6 TỶ,  | Quận 6, Hồ Chí Minh | Đường Tân Hóa, 10              | Bán nhà HẺM XE HƠI TRÁNH TÂN HOÁ, chỉ 4.6 TỶ, | 38   | NaN      | Sổ đỏ/ Sổ hồng | 4.0  | NaN               | NaN       | 4 tỷ 600 triệu |
+
+
+Thành một dữ liệu sạch, sử dụng tốt như thế này:
+
+| id     | price | area | bedrooms | wc   | n_floors | car_place | house_orientation | furniture | facade | legal            | street           | district | type        | date       |
+|--------|-------|------|----------|------|----------|-----------|-------------------|-----------|--------|------------------|------------------|----------|-------------|------------|
+| 115827 | 2.6   | 16   | 4.0      | 3.0  | 3.0      | False     | NaN               | NaN       | False  | sổ đỏ/ sổ hồng   | lý thường kiệt   | quận 10  | tin thường  | 22/07/2024 |
+| 115833 | 3.0   | 32   | 4.0      | NaN  | 5.0      | True      | NaN               | NaN       | False  | sổ đỏ/ sổ hồng   | NaN              | quận 6   | tin thường  | 22/07/2024 |
+| 115834 | 4.6   | 38   | 3.0      | 4.0  | 3.0      | True      | NaN               | NaN       | False  | sổ đỏ/ sổ hồng   | tân hóa          | quận 6   | tin thường  | 22/07/2024 |
+
+### Xử lý định dạng của Data Frame
+
+Đầu tiên ta đập vào mắt ta là một cột vô dụng mang tên `Unnamed: 0`, nó là một cột index dư thừa, nên sẽ được loại bỏ ngay trong bước đầu tiên. Sau đó thì ta tiến hành xử lý chuẩn hóa tên các cột trong Data Frame, đưa các tên về chữ thường và nếu có 2 từ trở lên sẽ được nối với nhau bằng `_`. Hơn nữa, với mỗi cột ta đều chuẩn hóa dữ liệu không phải số thành chữ thường hết. Tất cả các bước sau được gói gọn trong hàm:
+
+```python
+def process_df_format(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Process a DataFrame by converting column names to snake_case and converting 
+    all string values in object columns to lowercase.
+    """
+    if "Unnamed: 0" in df.columns:
+        df = df.drop(columns='Unnamed: 0', axis=1)
+    df.columns = df.columns.str.replace(' ', '_').str.lower()
+    object_columns = df.select_dtypes(include='object').columns
+    df[object_columns] = df[object_columns].apply(lambda col: col.str.lower())
+    return df
+```
+
+### Trích xuất dữ liệu từ cột `Description` và `Title`
+
+#### Tổng quan, ý tưởng
+
+Đối với bài toán hồi quy dự đoán giá nhà dựa vào các đặc trưng phổ biến như *diện tích, số phòng ngủ, số phòng tắm, số tầng,...* nhưng trong bộ dữ liệu thô lại thiếu đi quá nhiều do tính chất của trang web. Một vài post sẽ cho người đăng viết mô tả về căn nhà (trong đó có thể gồm các thông tin trên), nhưng người dùng lại không hề nhập tay vào ô *số phòng ngủ, số toilet, ...*. Từ đó dẫn tới việc thiếu đi dữ liệu trong quá trình cào.
+
+Ta quan sát một số ví dụ:
+
+| Unnamed: 0 | Date       | Type       | ID     | Title                                         | Location1          | Location2                       | Description                                   | Area | Bedrooms | Legal          | WC   | House orientation | Furniture | Price         |
+|------------|------------|------------|--------|-----------------------------------------------|--------------------|---------------------------------|-----------------------------------------------|------|----------|----------------|------|-------------------|-----------|---------------|
+| 4          | 22/07/2024 | Tin Thường | 115834 | Bán nhà HẺM XE HƠI TRÁNH TÂN HOÁ, chỉ 4.6 TỶ,  | Quận 6, Hồ Chí Minh | Đường Tân Hóa, 10              | Bán nhà HẺM XE HƠI TRÁNH TÂN HOÁ, chỉ 4.6 TỶ, | 38   | NaN      | Sổ đỏ/ Sổ hồng | 4.0  | NaN               | NaN       | 4 tỷ 600 triệu |
+
+Ta thấy cột `Bedrooms` là NaN nhưng hãy cùng quan sát phần `Description` của dữ liệu này:
+
+```
+Bán nhà HẺM XE HƠI TRÁNH TÂN HOÁ, chỉ 4.6 TỶ, KHU AN NINH, YÊN TĨNH, DÂN TRÍ CAO
+
+- Diện tích : 3.95mx9.5m
+
+-Kết cấu 3 tầng với 3 PN , 3WC.
+
+-Hẻm nhựa 6m xe hơi tránh, thông qua Đặng Nguyên Cẩn
+
+Ms Tuyền 0909.738.688 - Zalo 24/24 - Tư vấn pháp lý - Hỗ trợ miễn phí
+```
+
+Ta tìm được thông tin "3 PN" trong phần mô tả này, nên từ đó ta cố gắng trích xuất chúng và giảm thiểu số lượng dữ liệu NaN nhất có thể. Chính vì vậy dữ liệu sau khi xử lý mới có số phòng ngủ là 3:
+
+| id     | price | area | bedrooms | wc   | n_floors | car_place | house_orientation | furniture | facade | legal            | street           | district | type        | date       |
+|--------|-------|------|----------|------|----------|-----------|-------------------|-----------|--------|------------------|------------------|----------|-------------|------------|
+| 115834 | 4.6   | 38   | 3.0      | 4.0  | 3.0      | True      | NaN               | NaN       | False  | sổ đỏ/ sổ hồng   | tân hóa          | quận 6   | tin thường  | 22/07/2024 |
+
+Trước hết ta cần hiểu được một cách tổng quan về **Regex**:
+
+**Regex (Regular Expressions)** là một công cụ mạnh mẽ dùng để tìm kiếm, khớp mẫu (pattern matching), và xử lý chuỗi văn bản. Regex thường được sử dụng trong xử lý dữ liệu, kiểm tra chuỗi, và trích xuất thông tin từ dữ liệu không cấu trúc.
+
+Ở phần sau, ta sẽ áp dụng toàn bộ phương pháp để trích xuất thông tin từ cả `Description` và `Title`.
+
+#### Xử lý các dữ liệu số
+
+Ta cần xem qua hai hàm phụ trợ chính trong việc trích xuất này là hàm `process_number` và `process_boolean` trong đó:
+- `process_number` được sử dụng để tìm kiếm số đầu tiên phù hợp với mẫu regex. Đầu tiên nó kiểm tra nếu chuỗi đầu vào là dữ liệu khuyết nó sẽ trả về khuyết luôn. Sau đó, tìm kiếm mẫu regex trong chuỗi mô tả, nếu có trả về số đầu tiên.
+    ```python
+    def process_number(description: str, pattern: str) -> pd.NA:
+    """
+    Extract the first number found in the string that matches the given pattern.
+    """
+    if pd.isnull(description):
+        return pd.NA
+    match = re.search(pattern, description)
+    if match:
+        return int(re.findall(r"\d+", match.group())[0])
+    return pd.NA
+    ```
+- `process_boolean` xác định xem một chuỗi mô tả có chứa mẫu regex cụ thể hay không. Tương tự cũng sẽ có bước kiểm tra dữ liệu khuyết. Sau đó, trả về `True` nếu có sự tồn tại của mẫu regex trong chuỗi, ngược lại trả về `False`.
+    ```python
+    def process_boolean(description: str, pattern: str) -> bool:
+    """
+    Check if the input string matches the given pattern.
+    """
+    if pd.isnull(description):
+        return pd.NA
+    return bool(re.search(pattern, description))
+    ```
+
+Từ đó các hàm xử lý dữ liệu khuyết sẽ có một "workflow" tương tự nhau như sau: *thiết kế regex pattern* $\to$ *tìm kiếm* $\to$ *điền vào dữ liệu khuyết*.
+
+1. Xử lý số phòng ngủ
+
+    Hàm chính của chúng ta là `process_bedroom`, trong đó regex pattern được thiết kế để bắt gặp được các trường hợp phổ biến đã được ta kiểm tra bằng thực nghiệm với bộ dữ liệu thô như sau:
+    - 2pn
+    - 3 phòng ngủ
+    - 5 ngủ
+    - ...
+
+    Vì là tiếng Việt phong phú, nên các ví dụ trên còn có thể viết dưới dạng không dấu nên cuối cùng regex pattern mà ta thiết kế cho trường hợp này sẽ là như sau:
+
+    ```python
+    pattern = r"\d+\s?(pn|phòng ngủ|phong ngu|phòng ngu|phong ngủ|phòng ngũ|ngủ)"
+    ```
+
+2. Xử lý số nhà vệ sinh
+
+    Tương tự với cách làm việc như trên, hàm chính cho việc này sẽ là `process_bathroom`, và các trường hợp phổ biến trong dữ liệu thô là:
+
+    - 2wc
+    - 3 toilet
+    - 1 vệ sinh
+    - ...
+
+    Từ đó ta có regex pattern sau cho trường hợp này là:
+
+    ```python
+    pattern = r"\d+\s?(wc|toilet|vs|vệ sinh|ve sinh|nhà vệ sinh|nhà vs)"
+    ```
+
+3. Xử lý số tầng
+
+    Số tầng là theo chúng tôi nghĩ là một đặc trưng rất quan trọng trong bài toán hồi quy tiên đoán giá nhà này, và trên web không hề có thuộc tính này. Nhưng may mắn thay, trong phần mô tả các người đăng rất hay mô tả đặc điểm này, nên chúng tôi cũng cố gắng sử dụng Regex để trích xuất được.
+
+    Xét ví dụ đã thấy ở trên:
+
+    ```
+    Bán nhà HẺM XE HƠI TRÁNH TÂN HOÁ, chỉ 4.6 TỶ, KHU AN NINH, YÊN TĨNH, DÂN TRÍ CAO
+
+    - Diện tích : 3.95mx9.5m
+
+    -Kết cấu 3 tầng với 3 PN , 3WC.
+
+    -Hẻm nhựa 6m xe hơi tránh, thông qua Đặng Nguyên Cẩn
+
+    Ms Tuyền 0909.738.688 - Zalo 24/24 - Tư vấn pháp lý - Hỗ trợ miễn phí
+    ```
+
+    Ta rõ ràng biết được rằng số tầng là 3 và thông qua kiểm tra thực nghiệm, chúng tôi cũng thấy được cách mô tả phổ biến là:
+
+    - 2 lầu
+    - 3 tầng
+    - 4 tấm
+    - ...
+
+    Vì vậy để bao quát được các mẫu đó, chúng tôi đã thiết kế regex pattern cho trường hợp này như sau:
+
+    ```python
+    pattern = r"\d+\s?(lầu|tầng|tấm|tang|lau|tam)"
+    ```
+
+    Ngoài ra, chúng tôi thấy được có nhiều phần mô tả không đề cập tới vấn đề số tầng, nhưng lại có một mô tả về căn nhà là "nhà cấp 4", mà đó nghĩa là nhà 1 tầng. Nên chúng tôi thiết kế một mảng các từ có thể là mô tả nhà cấp 4 như sau:
+
+    ```python
+    level4 = ["cấp 4", "c4", "cap 4", "cap4"]
+    ```
+
+    Bất cứ từ nào nằm trong phần mô tả thì sẽ trả về số tầng là 1 ngay.
+
+4. Xử lý mức giá
+
+    Ta xem qua hàm `process_price` được thiết kế để xử lý và chuẩn hóa dữ liệu giá bất động sản từ chuỗi mô tả dạng tự do sang dạng số thực.
+
+    ```python
+    def process_price(price: str) -> float:
+        """
+        Convert a price string to a float value based on the format "x tỷ y triệu" or similar.
+        """
+        if pd.isnull(price) or "tháng" in price:
+            return pd.NA
+        numbers = re.findall(r"\d+", price)
+        if "tỷ" in price:
+            if len(numbers) == 1:
+                return float(numbers[0])
+            elif len(numbers) == 2:
+                return float(numbers[0]) + float(numbers[1]) / 1000
+        elif len(numbers) == 1:
+            number = float(numbers[0])
+            if number <= 500:
+                return pd.NA
+            return number / 1000
+        return pd.NA
+    ```
+
+    Hàm này chủ yếu tập trung vào việc trích xuất giá trị từ các định dạng giá phổ biến như:
+
+    - "2 tỷ 500 triệu"
+    - "3 tỷ"
+    - "400 triệu"
+    - ...
+
+    **Cách hoạt động:** Đầu tiên, kiểm tra các giá trị NaN hay các giá trị rác không phải mô tả về mức giá. Tiếp theo, sử dụng regex `re.findall(r"\d+", price)` để trích xuất tất cả các số trong chuỗi. Hàm kiểm tra các từ khóa quan trọng như "tỷ" và "triệu" để xử lý giá theo hai trường hợp chính:
+
+    - **Trường hợp 1:** Giá trị chứa từ "tỷ"
+
+        a) Cấu trúc phổ biến:
+        - x tỷ: Chỉ có số nguyên tỷ (vd: "3 tỷ").
+        - x tỷ y triệu: Bao gồm cả tỷ và triệu (vd: "2 tỷ 500 triệu").
+
+        b) Xử lý:
+        - Nếu chỉ có x tỷ, giá trị được chuyển đổi trực tiếp thành float từ số nguyên tỷ.
+        - Nếu có cả x tỷ và y triệu, giá trị được tính bằng công thức:
+        ```python
+        float(numbers[0]) + float(numbers[1]) / 1000
+        ```
+            (1 triệu = 0.001 tỷ).
+    - **Trường hợp 2:** Giá trị không chứa "tỷ" nhưng có "triệu"
+
+        a) Cấu trúc phổ biến:
+        - x triệu: Chỉ có giá trị triệu (vd: "400 triệu").
+
+        b) Xử lý:
+        - Số được chia cho 1000 để chuyển đổi từ triệu sang tỷ:
+            ```python
+            number / 1000
+            ```
+        - Nếu giá trị triệu quá nhỏ ($\leq$ 500), giả định đây không phải là giá bán hợp lệ và trả về `pd.NA`.
+
+#### Tạo ra các cột dữ liệu mới hữu ích cho bài toán
+
+Ngoài việc chuẩn hóa giá cả và thông tin cơ bản như số phòng ngủ, phòng vệ sinh, và số tầng, các hàm dưới đây được thiết kế để trích xuất thông tin chi tiết hơn về các đặc điểm liên quan đến vị trí, tiện ích, và tính năng của bất động sản. Điều này giúp cải thiện khả năng phân tích và đánh giá giá trị tài sản.
+
+Trong phần này, chúng tôi vẫn cố gắng khai thác tối đa thông tin từ cột `Description` và `Title` để lấy ra được những đặc trưng mà chúng tôi thấy hữu ích trong bài toán hồi quy tiến đoán này. Quy trình làm việc vẫn là cố gắng thiết kế các regex pattern mà có thể thể hiện được "sự tồn tại" của biến sắp được tạo ra trong `Description` hay `Title`.
+
+1. Xử lý không gian đỗ xe hơi:
+
+    Hàm `process_car_place` được thiết kế để kiểm tra xem bất động sản có không gian dành cho đỗ xe hoặc gara hay không, một yếu tố quan trọng trong việc đánh giá sự tiện nghi.
+
+    **Cách hoạt động:** 
+    - Sử dụng regex để nhận diện các từ khóa liên quan đến đỗ xe trong chuỗi mô tả, bao gồm:
+    - "gara", "đỗ ô tô", "xe hơi", "hầm xe", "sân đỗ", "hẻm xe hơi", "hẻm xe tải", "oto", v.v.
+    - Trả về `True` nếu tìm thấy từ khóa trong mô tả, `False` nếu không tìm thấy.
+
+    Sau đây là pattern đầy đủ:
+
+    ```python
+    pattern = r"gara|đỗ ô tô|xe hơi|ô tô tránh|hầm xe|hầm|nhà xe|đỗ|ô tô|ôtô|sân đỗ|hẻm xe hơi|hxh|oto|hẻm xe tải"
+    ```
+
+    **Ý nghĩa:** Hàm này giúp nhận diện bất động sản phù hợp với người mua có yêu cầu về đỗ xe, đặc biệt ở các khu vực thành phố lớn nơi không gian đỗ xe là một yếu tố ưu tiên.
+
+2. Xử lý thông tin mặt tiền:
+
+    Chúng tôi sử dụng hai hàm để có thể trích xuất được thông tin mặt tiền là `process_facade_step1` và `process_facade_step2`. Hai hàm này được sử dụng để xác định vị trí của bất động sản liên quan đến mặt tiền, với hai trường hợp cụ thể:
+
+    - 2.1. Hàm `process_facade_step1`
+
+        Sử dụng regex để tìm kiếm các cụm từ mô tả trực tiếp mặt tiền như: "mặt tiền", "mặt phố", "mặt đường", "mat tien". Trả về `True` nếu bất động sản nằm trực tiếp trên mặt tiền đường, ngược lại trả vè `False`
+
+        Ví dụ:
+
+        ```python
+        description = "Nhà nằm ở mặt tiền đường lớn, thích hợp kinh doanh."
+        result = process_facade_step1(description)
+        print(result)  # Output: True
+        ```
+
+    - 2.2. Hàm `process_facade_step2`
+
+        Hàm này sẽ nhận dạng các từ khóa mô tả việc bất động sản có khoảng cách gần mặt tiền như: "cách mặt tiền", "sát mặt tiền", "cách mặt phố", "sát mặt phố". Trả về `True` nếu bất động sản gần mặt tiền, ngược lại trả về `False`.
+
+        Ví dụ:
+
+        ```python
+        description = "Nhà cách mặt tiền đường 10m, thuận tiện di chuyển."
+        result = process_facade_step2(description)
+        print(result)  # Output: True
+        ```
+
+    Sau cùng chúng tôi sẽ lấy giao của `process_facade_step1` và phủ định của `process_facade_step2`, từ đó xác định được việc bất động sản có phải tọa lạc ở mặt tiền hay không.
+
+    **Ý nghĩa:** Những hàm này cho phép phân tích tự động các đặc điểm chi tiết của bất động sản dựa trên mô tả tự do. Khi kết hợp với các hàm xử lý khác (giá cả, số phòng ngủ, phòng vệ sinh), hệ thống có thể:
+    - Đưa ra các đánh giá tổng quan và chi tiết hơn về bất động sản.
+    - Tăng khả năng lọc và tìm kiếm bất động sản phù hợp với nhu cầu cụ thể của người dùng (ví dụ: ưu tiên mặt tiền, có gara).
+    - Cải thiện độ chính xác trong định giá và phân tích giá trị tài sản.
+
 
 # II. EDA và Feature Engineering
 
