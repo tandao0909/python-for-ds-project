@@ -168,7 +168,7 @@ if __name__ == '__main__':
     )
 
     # Display the cluster map
-    cluster_map.save("foliumVisualizationPrice.html")
+    cluster_map.save("foliumVisualizationCluster.html")
 
     # Select important features based on 'price'
     features = processed_df.drop(columns='price')
@@ -176,13 +176,10 @@ if __name__ == '__main__':
     selected_features = select_important_features(features, target)
     X_filtered = processed_df[selected_features]
 
-    # Standardize the selected features for better scaling
-    X_filtered_standardized = standardize_data(X_filtered)
-
     # Combine the standardized features with the target column 'price'
-    X_final_with_price = pd.concat([X_filtered_standardized, target], axis=1)
+    X_final_with_price = pd.concat([X_filtered, target], axis=1)
 
     # Split the data into train set, test set and save to CSV files
     df_processed, df_train, df_test = split_data(X_final_with_price, target_column='price')
     df_train.to_csv('datasets/housing_train.csv', index=False)
-    df_test.to_csv('datasets/housing_test.csv.csv', index=False)
+    df_test.to_csv('datasets/housing_test.csv', index=False)

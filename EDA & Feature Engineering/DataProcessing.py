@@ -123,8 +123,8 @@ class DataCleaner:
             url = f"https://api.opencagedata.com/geocode/v1/json?q={address}&key={self.api_key}"
             try:
                 response = requests.get(url)
-                response.raise_for_status()
-                data = response.json()
+                response.raise_for_status() # Raise an exception for 4xx/5xx status codes
+                data = response.json() # Parse the JSON response
                 if data['results']:
                     location = data['results'][0]['geometry']
                     cache[address] = (location['lat'], location['lng'])
