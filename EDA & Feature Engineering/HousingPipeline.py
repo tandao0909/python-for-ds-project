@@ -176,9 +176,6 @@ if __name__ == '__main__':
     selected_features = select_important_features(features, target)
     X_filtered = processed_df[selected_features]
 
-    # Standardize the selected features for better scaling
-    X_filtered_standardized = standardize_data(X_filtered)
-
     # Combine the standardized features with the target column 'price'
     X_final_with_price = pd.concat([X_filtered_standardized, target], axis=1)
 
