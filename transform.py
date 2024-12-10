@@ -260,7 +260,7 @@ def transform(df: pd.DataFrame, to_save=False, OUTPUT_PATH="data/housing.csv") -
     columns_to_use = [
         "id", "price", "area", "bedrooms", "wc", "n_floors", "car_place",
         "house_orientation", "furniture", "facade", "legal", "street",
-        "district", "type", "date", "location2"
+        "district", "type", "date"
     ]
     df = df[columns_to_use].dropna(subset=["price"]).reset_index(drop=True)
     if to_save:
