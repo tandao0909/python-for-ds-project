@@ -168,7 +168,7 @@ if __name__ == '__main__':
     )
 
     # Display the cluster map
-    cluster_map.save("foliumVisualizationPrice.html")
+    cluster_map.save("foliumVisualizationCluster.html")
 
     # Select important features based on 'price'
     features = processed_df.drop(columns='price')
