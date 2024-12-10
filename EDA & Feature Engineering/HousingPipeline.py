@@ -91,20 +91,6 @@ def select_important_features(X: pd.DataFrame, y: pd.Series, variance_threshold:
     
     return selected_features
 
-def standardize_data(X: pd.DataFrame) -> pd.DataFrame:
-    """
-    Standardize the data.
-
-    Parameters:
-        X (pandas.DataFrame): The input DataFrame.
-
-    Returns:
-        pandas.DataFrame: The DataFrame with the data standardized.
-    """
-    scaler = StandardScaler()
-    X_standardized = pd.DataFrame(scaler.fit_transform(X), columns=X.columns, index=X.index)
-    return X_standardized
-
 def split_data(X: pd.DataFrame, target_column: pd.Series) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Split the data into training and test sets.
