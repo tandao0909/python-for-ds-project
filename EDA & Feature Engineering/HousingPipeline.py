@@ -185,4 +185,4 @@ if __name__ == '__main__':
     # Split the data into train set, test set and save to CSV files
     df_processed, df_train, df_test = split_data(X_final_with_price, target_column='price')
     df_train.to_csv('datasets/housing_train.csv', index=False)
-    df_test.to_csv('datasets/housing_test.csv.csv', index=False)
+    df_test.to_csv('datasets/housing_test.csv', index=False)
