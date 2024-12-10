@@ -177,7 +177,7 @@ if __name__ == '__main__':
     X_filtered = processed_df[selected_features]
 
     # Combine the standardized features with the target column 'price'
-    X_final_with_price = pd.concat([X_filtered_standardized, target], axis=1)
+    X_final_with_price = pd.concat([X_filtered, target], axis=1)
 
     # Split the data into train set, test set and save to CSV files
     df_processed, df_train, df_test = split_data(X_final_with_price, target_column='price')
