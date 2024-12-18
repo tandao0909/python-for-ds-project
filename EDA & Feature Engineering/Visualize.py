@@ -303,7 +303,7 @@ def visualize_real_estate_price(housing_df: pd.DataFrame) -> folium.Map:
     visualizer = RealEstateVisualizerPrice(housing_df)
     return visualizer.create_map()  # Create a folium map
 
-def visualize__real_estate_clusters(housing_df:pd.DataFrame, num_clusters:int=5) -> folium.Map:
+def visualize_real_estate_clusters(housing_df:pd.DataFrame, num_clusters:int=5) -> folium.Map:
     visualizer = RealEstateVisualizerCluster(housing_df, num_clusters) 
     visualizer.fit_kmeans() # Fit KMeans model and add cluster labels to the dataframe
     return visualizer.create_map() # Create a folium map

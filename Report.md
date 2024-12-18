@@ -10,11 +10,26 @@
       - [Xử lý các dữ liệu số](#xử-lý-các-dữ-liệu-số)
       - [Tạo ra các cột dữ liệu mới hữu ích cho bài toán](#tạo-ra-các-cột-dữ-liệu-mới-hữu-ích-cho-bài-toán)
 - [II. EDA và Feature Engineering](#ii-eda-và-feature-engineering)
-  - [3 Xử lý và làm sạch dữ liệu](#3-xử-lý-và-làm-sạch-dữ-liệu)
+  - [3 Xử lý và làm sạch dữ liệu với `DataProcessing.py`](#3-xử-lý-và-làm-sạch-dữ-liệu-với-dataprocessingpy)
     - [3.1. `DataCleaner` class](#31-datacleaner-class)
       - [3.1.1. Chức năng chính của `DataCleaner`](#311-chức-năng-chính-của-datacleaner)
       - [3.1.2. Các phương thức chính của `DataCleaner`](#312-các-phương-thức-chính-của-datacleaner)
     - [3.2. Các hàm khác](#32-các-hàm-khác)
+    - [3.3. Chạy chương trình](#33-chạy-chương-trình)
+  - [4. Visualize Data với `Visualize.py`](#4-visualize-data-với-visualizepy)
+    - [4.1. Lọc tọa độ theo lãnh thổ Việt Nam với hàm `check_coordinates_in_vietnam`](#41-lọc-tọa-độ-theo-lãnh-thổ-việt-nam-với-hàm-check_coordinates_in_vietnam)
+      - [4.1.1. Khai báo thư viện](#411-khai-báo-thư-viện)
+      - [4.1.2. Tham số đầu vào](#412-tham-số-đầu-vào)
+      - [4.1.3. Các bước xử lý chính trong hàm](#413-các-bước-xử-lý-chính-trong-hàm)
+    - [4.2. Tạo bản đồ phân phối giá bất động sản với hàm `visualize_real_estate_price`](#42-tạo-bản-đồ-phân-phối-giá-bất-động-sản-với-hàm-visualize_real_estate_price)
+      - [4.2.1. `RealEstateVisualizerPrice` class](#421-realestatevisualizerprice-class)
+      - [4.2.2. Hàm `visualize_real_estate_price`](#422-hàm-visualize_real_estate_price)
+    - [4.3. Tạo bản đồ phân cụm và Feature Engineering với hàm `visualize_real_estate_clusters`](#43-tạo-bản-đồ-phân-cụm-và-feature-engineering-với-hàm-visualize_real_estate_clusters)
+      - [4.3.1. `RealEstateVisualizerClusters` class](#431-realestatevisualizerclusters-class)
+      - [4.3.2. Hàm `visualize_real_estate_clusters`](#432-hàm-visualize_real_estate_clusters)
+    - [4.4. Tạo bản đồ Heatmap dựa trên giá bất động sản với hàm `visualize_real_estate_price_heatmap`](#44-tạo-bản-đồ-heatmap-dựa-trên-giá-bất-động-sản-với-hàm-visualize_real_estate_price_heatmap)
+    - [4.5. Chạy chương trình](#45-chạy-chương-trình)
+  - [5. Feature Selection](#5-feature-selection)
 
 # I. Data Crawling and Preprocessing
 
@@ -312,7 +327,7 @@ Trong phần này, chúng tôi vẫn cố gắng khai thác tối đa thông tin
 
 # II. EDA và Feature Engineering
 
-## 3 Xử lý và làm sạch dữ liệu
+## 3 Xử lý và làm sạch dữ liệu với `DataProcessing.py`
 
 Ở phần này, tôi sẽ sử dụng file `DataProcessing.py` có chứa `DataCleaner` class để xử lý và làm sạch dữ liệu.
 
@@ -758,3 +773,767 @@ class DataCleaner:
     3. Cuối cùng, hàm trả về DataFrame sau khi đã loại bỏ các cột object và các cột do người dùng yêu cầu.  
 
     Tóm lại, `del_col` hỗ trợ bạn nhanh chóng loại bỏ các cột không mong muốn, giúp tập dữ liệu trở nên dễ quản lý hơn và phù hợp với mục đích phân tích, tiền xử lý hoặc mô hình hoá tiếp theo.
+
+### 3.3. Chạy chương trình
+
+1. Đầu tiên, ta cần thực hiện lấy API Key từ OpenCage để sử dụng dịch vụ geocoding. Đăng ký tài khoản và lấy API Key tại [OpenCage API](https://opencagedata.com/).
+
+2. Tiếp theo, truyền API Key vào lớp `DataCleaner` và khởi tạo một đối tượng từ lớp này.
+    ```python
+    data_cleaner = DataCleaner(api_key="cfb14e7f5ab043e99707a032f1a968bb")
+    ```
+
+3. Gọi phương thức `clean_data` để xử lý dữ liệu.
+    ```python
+    df_cleaned = data_cleaner.clean_data(
+        df=df,
+        target_col='price',
+        drop_na_cols=["price", "area"],
+        input_cols=['price', 'area', 'car_place', 'facade'],
+        cols_to_impute=['bedrooms', 'wc', 'n_floors']
+    )
+    ```
+
+    Trong trường hợp này, tôi truyền vào các tham số như sau:
+    - `df`: DataFrame chứa dữ liệu cần xử lý.
+    - `target_col`: Cột mục tiêu dùng để xác định ngoại lai. Ở đây, tôi chọn cột `price` làm cột mục tiêu.
+    - `drop_na_cols`: Danh sách các cột cần kiểm tra và loại bỏ dòng thiếu dữ liệu. Ở đây, tôi chọn `price` và `area` làm cột không được thiếu dữ liệu.
+    - `input_cols`: Danh sách các cột dùng để xây dựng mô hình dự báo giá trị thiếu. Ở đây, tôi chọn các cột `price`, `area`, `car_place`, và `facade`.
+    - `cols_to_impute`: Danh sách các cột cần điền giá trị thiếu. Ở đây, tôi chọn các cột `bedrooms`, `wc`, và `n_floors`.
+
+4. Kết quả trả về sẽ là đánh giá cho các models được sử dụng để điền giá trị thiếu, và DataFrame đã được xử lý:
+    ```
+    Imputing for column: bedrooms
+    knn MSE for bedrooms: 2.4667
+    linear_reg MSE for bedrooms: 2.1670
+    decision_tree MSE for bedrooms: 2.7457
+    random_forest MSE for bedrooms: 2.4779
+    gradient_boosting MSE for bedrooms: 2.4261
+    Best model for bedrooms: LinearRegression() with MSE: 2.1670
+    -----------------------------------
+    Imputing for column: wc
+    knn MSE for wc: 2.9732
+    linear_reg MSE for wc: 1.9929
+    decision_tree MSE for wc: 2.2317
+    random_forest MSE for wc: 1.8329
+    gradient_boosting MSE for wc: 2.0864
+    Best model for wc: RandomForestRegressor(max_depth=10, n_jobs=-1, random_state=42) with MSE: 1.8329
+    -----------------------------------
+    Imputing for column: n_floors
+    knn MSE for n_floors: 4.9824
+    linear_reg MSE for n_floors: 9.5099
+    decision_tree MSE for n_floors: 16.0299
+    random_forest MSE for n_floors: 39.8623
+    gradient_boosting MSE for n_floors: 7.6524
+    Best model for n_floors: KNeighborsClassifier(n_neighbors=12,
+                        weights=<function DataCleaner.handle_missing_values_by_using_models.<locals>.myWeight at 0x13d3f8540>) with MSE: 4.9824
+    -----------------------------------
+    ```
+
+    Kết quả này cho thấy mô hình Linear Regression tốt cho cột `bedrooms`, Random Forest tốt cho cột `wc`, và KNN tốt cho cột `n_floors`.
+    \
+    Sau đó, chúng ta sẽ được yêu cầu "Are there any skewed columns that need log transformation? (y/n):". Nếu ta muốn áp dụng log transform cho một số cột, trong trường hợp này tôi trả lời là "n". Tuy nhiên, nếu bạn muốn áp dụng log transform, hãy trả lời "y" và nhập tên các cột cần áp dụng log transform, cách nhau bởi dấu phẩy. Ví dụ:
+
+    ```
+    Are there any skewed columns that need log transformation? (y/n): y
+    Enter the names of the skewed columns separated by commas: price, area, facade
+    ```
+
+    ![Data Processing](./images/data_processing.png)
+
+    _Hình 3: Biểu đồ histogram của dữ liệu sau khi xử lý_
+
+5. Cuối cùng, tôi sẽ xóa các cột không cần thiết khỏi DataFrame bằng cách sử dụng hàm `del_col`.
+    ```python
+    df_cleaned = del_col(df_cleaned, ['facade'])
+    ```
+
+    Cột `facade` đã được xóa khỏi DataFrame bởi vì chứa dữ liệu không thực sự được xác thực và có khả năng gây ra nhiễu cho mô hình. Ngoài ra, các cột dạng object cũng đã được xóa khỏi DataFrame để giảm kích thước dữ liệu như đã trình bày trước đó.
+
+    Kết quả cuối cùng sẽ là DataFrame đã được xử lý và lưu vào thư mục `datasets` với tên file `housing_cleaned.csv`.
+
+    ```python
+    df_cleaned.to_csv('./datasets/housing_cleaned.csv', index=False)
+    data_cleaned = pd.read_csv('./datasets/housing_cleaned.csv')
+    print(data_cleaned)
+    ```
+
+    Kết quả của DataFrame:
+
+    |    | id     | price  | area | bedrooms | wc       | n_floors | car_place | latitude   | longitude   |
+    |----|--------|--------|------|----------|----------|----------|-----------|------------|-------------|
+    | 0  | 121356 | 0.790  | 57   | 2.000000 | 2.000000 | 1.0      | 0         | 10.713820  | 106.589326  |
+    | 1  | 115827 | 2.600  | 16   | 4.000000 | 3.000000 | 3.0      | 0         | 10.767127  | 106.659121  |
+    | 2  | 115833 | 3.000  | 32   | 4.000000 | 2.069591 | 5.0      | 1         | 10.745886  | 106.639292  |
+    | 3  | 115834 | 4.600  | 38   | 4.000000 | 4.000000 | 4.0      | 1         | 10.755202  | 106.637447  |
+    | 4  | 115837 | 3.450  | 76   | 4.000000 | 4.000000 | 1.0      | 1         | 10.867853  | 106.623154  |
+    | ...| ...    | ...    | ...  | ...      | ...      | ...      | ...       | ...        | ...         |
+    | 5828| 88818 | 9.500  | 46   | 4.000000 | 4.000000 | 4.0      | 1         | 10.791831  | 106.671614  |
+    | 5829| 86770 | 1.950  | 48   | 2.000000 | 3.000000 | 1.0      | 0         | 10.710682  | 106.618825  |
+    | 5830| 86258 | 10.200 | 56   | 3.000000 | 4.000000 | 3.0      | 1         | 10.801764  | 106.711032  |
+    | 5831| 86002 | 6.200  | 47   | 4.000000 | 5.000000 | 5.0      | 1         | 10.819914  | 106.698770  |
+    | 5832| 108530| 0.001  | 30   | 1.695659 | 1.264540 | 2.0      | 0         | 10.852466  | 106.660611  |
+
+    [5833 rows x 9 columns]
+
+## 4. Visualize Data với `Visualize.py`
+
+### 4.1. Lọc tọa độ theo lãnh thổ Việt Nam với hàm `check_coordinates_in_vietnam`
+
+Hàm `check_coordinates_in_vietnam` có mục đích kiểm tra xem các điểm tọa độ (longitude, latitude) trong DataFrame về thông tin vị trí bất động sản có nằm trong lãnh thổ Việt Nam hay không. Kết quả trả về là một DataFrame chỉ chứa những tọa độ thuộc phạm vi lãnh thổ Việt Nam.
+
+#### 4.1.1. Khai báo thư viện
+
+```python
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# for creating a map
+import folium 
+
+ # for reading shapefiles
+import fiona
+
+from haversine import haversine
+from sklearn.cluster import KMeans
+
+# for creating a color map
+from branca.colormap import LinearColormap
+
+# for checking if a point is within a polygon, Point is a class to represent a point, shape is a function to create a polygon from a GeoJSON object
+from shapely.geometry import Point, shape
+from folium.plugins import HeatMap
+```
+
+- `folium`: Thư viện Python dùng để tạo bản đồ tương tác trên web.
+- `fiona`: Thư viện Python dùng để đọc file shapefile.
+- `haversine`: Thư viện Python dùng để tính khoảng cách giữa hai điểm trên trái đất.
+- `KMeans`: Thư viện Python dùng để phân cụm dữ liệu.
+- `LinearColormap`: Thư viện Python dùng để tạo bản đồ màu tuyến tính.
+- `Point`, `shape`: Các hàm từ thư viện `shapely` dùng để xác định xem một điểm có nằm trong một đa giác hay không.
+- `HeatMap`: Lớp từ thư viện `folium.plugins` dùng để tạo bản đồ nhiệt.
+
+#### 4.1.2. Tham số đầu vào
+
+- `shapefile_path: str`: Đường dẫn đến file shapefile chứa thông tin ranh giới lãnh thổ Việt Nam. Shapefile là một định dạng dữ liệu không gian (GIS) thường được sử dụng để lưu trữ các dạng hình học như đa giác, đường, điểm,... Trong trường hợp này, shapefile chứa đường biên giới quốc gia của Việt Nam.
+
+- `housing_df: pd.DataFrame`: DataFrame chứa dữ liệu bất động sản, trong đó có các cột `longitude` (kinh độ) và `latitude` (vĩ độ).
+
+#### 4.1.3. Các bước xử lý chính trong hàm
+
+1. **Lấy danh sách tọa độ**: Ở đây, hàm duyệt qua từng hàng trong `housing_df`, kết hợp `longitude` và `latitude` thành tuple `(longitude, latitude)` rồi đưa vào một danh sách `coordinates_list`.
+   ```python
+   coordinates_list = [
+       (longitude, latitude)
+       for longitude, latitude
+       in zip(housing_df['longitude'], housing_df['latitude'])
+   ]
+   ```
+
+2. **Đọc shapefile và tạo polygon cho Việt Nam**:  
+   ```python
+   with fiona.open(shapefile_path) as shp:
+       geometries = [shape(feature['geometry']) for feature in shp]
+       vietnam_shape = geometries[0] 
+   ```
+   - `fiona.open(shapefile_path)` dùng để mở file shapefile. Fiona là một thư viện Python chuyên để thao tác với dữ liệu GIS.
+   - `shape(feature['geometry'])` (từ shapely) chuyển dữ liệu hình học dạng GeoJSON thành một đối tượng hình học tương ứng (ví dụ: Polygon).
+   - `geometries` sẽ là một danh sách các đối tượng hình học (thường một shapefile có thể chứa nhiều feature - mỗi feature là một hình học).
+   - Ở đây, file shapefile chứa một vùng duy nhất đại diện cho lãnh thổ Việt Nam, do đó `vietnam_shape = geometries[0]` là polygon mô tả ranh giới Việt Nam.
+
+    Tham khảo thêm tại https://www.igismap.com/vietnam-shapefile-download-country-boundaryline-polygon/.
+
+3. **Lọc các tọa độ nằm trong lãnh thổ Việt Nam**:  
+   ```python
+   coordinates_in_vietnam = [
+       coordinate
+       for coordinate in coordinates_list
+       if Point(coordinate).within(vietnam_shape)
+   ]
+   ```
+   - Tạo một đối tượng `Point` từ `coordinate`.
+   - Dùng phương thức `within()` của shapely để kiểm tra xem điểm đó có nằm trong đa giác `vietnam_shape` hay không.
+   - Chỉ giữ lại những tọa độ thoả mãn điều kiện nằm trong.
+
+4. **Xác định index của những điểm hợp lệ và trả về DataFrame**:  
+   ```python
+   indices_in_vietnam = housing_df[['longitude', 'latitude']].apply(tuple, axis=1).isin(coordinates_in_vietnam)
+   return housing_df[indices_in_vietnam]
+   ```
+   - `housing_df[['longitude', 'latitude']].apply(tuple, axis=1)` chuyển từng hàng trong DataFrame thành tuple `(longitude, latitude)` tương ứng với `coordinates_in_vietnam`.
+   - `isin(coordinates_in_vietnam)` trả về một mảng boolean, True tại những hàng có tọa độ nằm trong lãnh thổ Việt Nam.
+   - `housing_df[indices_in_vietnam]` lọc DataFrame và chỉ giữ lại các hàng hợp lệ.
+
+**Ý nghĩa thực tiễn**:
+
+Khi xử lý dữ liệu bất động sản (hoặc bất kỳ dữ liệu địa lý) trên phạm vi lớn, có thể có nhiều điểm dữ liệu bị sai lệch hoặc không hợp lệ (ví dụ: tọa độ nằm ngoài biên giới quốc gia mong muốn). Hàm `check_coordinates_in_vietnam` giúp "làm sạch" dữ liệu bằng cách lọc bỏ những điểm không thuộc khu vực cần phân tích, từ đó giúp các thao tác phân tích và trực quan hóa tiếp theo được chính xác và tập trung hơn.
+
+```python
+def check_coordinates_in_vietnam(shapefile_path: str, housing_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Check if the coordinates in the housing DataFrame are within Vietnam's territory.
+
+    Parameters:
+        shapefile_path (str): The path to the shapefile containing the territory of Vietnam.
+        housing_df (pd.DataFrame): The DataFrame containing the housing data.
+
+    Returns:
+        pd.DataFrame: The DataFrame containing the housing data with coordinates within Vietnam's territory.
+    """
+    # List of coordinates to check
+    coordinates_list = [
+        (longitude, latitude)
+        for longitude, latitude
+        in zip(housing_df['longitude'], housing_df['latitude'])
+    ]
+
+    # Open the shapefile and get the polygon representing Vietnam's territory
+    with fiona.open(shapefile_path) as shp:
+        geometries = [shape(feature['geometry']) for feature in shp]
+        vietnam_shape = geometries[0]  # Vietnam shape is the first feature in the shapefile
+
+    # Filter out coordinates within Vietnam's territory
+    coordinates_in_vietnam = [
+        coordinate
+        for coordinate in coordinates_list
+        if Point(coordinate).within(vietnam_shape)
+    ]
+
+    # Indices of coordinates within Vietnam's territory
+    indices_in_vietnam = housing_df[['longitude', 'latitude']].apply(tuple, axis=1).isin(coordinates_in_vietnam)
+
+    # Return the housing data with coordinates within Vietnam's territory
+    return housing_df[indices_in_vietnam]
+```
+
+### 4.2. Tạo bản đồ phân phối giá bất động sản với hàm `visualize_real_estate_price`
+
+#### 4.2.1. `RealEstateVisualizerPrice` class
+
+Mục đích chính của class này là tạo ra một bản đồ tương tác thể hiện dữ liệu bất động sản, trong đó mỗi marker đại diện cho một bất động sản, màu sắc của dấu sẽ thể hiện mức giá.
+
+1. **Thuộc tính class và khởi tạo `__init__`:**
+
+- `housing (pd.DataFrame)`: DataFrame chứa dữ liệu bất động sản. DataFrame này phải bao gồm ít nhất các cột:  
+  - `latitude` (vĩ độ);
+  - `longitude` (kinh độ);
+  - `price` (giá bất động sản).
+  
+- `colormap (LinearColormap)`: Dùng để ánh xạ các giá trị `price` sang màu sắc. Ở đây, LinearColormap sẽ tạo dải màu liên tục giữa `vmin` (giá trị nhỏ nhất của price) và `vmax` (giá trị lớn nhất của price). Danh sách màu có thể tuỳ biến, ở đây dùng: `['green', 'blue', 'orange', 'red', 'purple', 'brown', 'black']`.
+
+```python
+def __init__(self, housing_df: pd.DataFrame) -> None:
+    self.housing = housing_df
+    self.colormap = LinearColormap(
+        ['green', 'blue', 'orange', 'red', 'purple', 'brown', 'black'],
+        vmin=self.housing['price'].min(),
+        vmax=self.housing['price'].max()
+    )
+```
+
+2. **Phương thức `add_markers`:**
+
+```python
+def add_markers(self, gmap: folium.Map) -> None:
+    for _, row in self.housing.iterrows():
+        marker_color = self.colormap(row['price'])
+        popup_content = f"Giá: {row['price']}"
+        folium.CircleMarker(
+            location=(row['latitude'], row['longitude']),
+            radius=5,
+            color=marker_color,
+            fill=True,
+            fill_color=marker_color,
+            popup=popup_content 
+        ).add_to(gmap)
+```
+
+- Duyệt qua từng dòng của DataFrame:
+  - Lấy giá trị `price` và ánh xạ nó qua `colormap` để lấy ra `marker_color`.
+  - Tạo một `CircleMarker` trên bản đồ folium:
+    - `location`: toạ độ `(latitude, longitude)` của bất động sản.
+    - `radius`: kích thước vòng tròn đánh dấu, ở đây là 5.
+    - `color` và `fill_color`: chính là `marker_color` vừa xác định dựa trên giá.
+    - `popup`: nội dung hiển thị khi click vào marker, ở đây là “Giá: {price}”.
+  - Thêm marker vào bản đồ.
+
+Kết quả: Mỗi bất động sản sẽ được biểu diễn bằng một vòng tròn màu tương ứng với giá trị của nó. Giá cao hơn có thể được tô màu sẫm hơn hoặc khác biệt (tuỳ theo dải màu).
+
+3. **Phương thức `create_map`:**
+
+```python
+def create_map(self) -> folium.Map:
+    gmap = folium.Map(location=[21.028511, 105.804817], zoom_start=6)
+    self.colormap.add_to(gmap)
+    self.add_markers(gmap)
+    return gmap
+```
+
+- Khởi tạo một bản đồ `folium.Map` với tâm là `[21.028511, 105.804817]` (gần Hà Nội) và mức zoom ban đầu là 6 (toàn cảnh Việt Nam).
+- Thêm `colormap` vào bản đồ để tạo chú giải màu.
+- Gọi `add_markers(gmap)` để vẽ marker tương ứng với từng bất động sản.
+- Trả về đối tượng bản đồ.
+
+**Ý nghĩa thực tiễn:**
+
+Lớp `RealEstateVisualizerPrice` cho phép chúng ta nhanh chóng tạo một bản đồ tương tác, thể hiện giá bất động sản trên toàn lãnh thổ (hoặc một khu vực cụ thể). Việc này rất hữu ích cho phân tích không gian, giúp người dùng trực quan xem phân bố giá và so sánh các khu vực, phục vụ cho việc định giá, phân tích đầu tư, hay hỗ trợ các nhà hoạch định chính sách.
+
+```python
+class RealEstateVisualizerPrice:
+    """
+    A class to visualize real estate data on a map based on price.
+    
+    Attributes:
+        housing (pd.DataFrame): The DataFrame containing the real estate data.
+        colormap (LinearColormap): The color map for the real estate prices.
+
+    Methods:
+        add_markers: Add markers for each real estate with color based on price.
+        create_map: Create a folium map with real estate data.
+    """
+    def __init__(self, housing_df: pd.DataFrame) -> None:
+        """
+        Initialize the RealEstateVisualizer object.
+
+        Parameters:
+            housing_df (pd.DataFrame): The DataFrame containing the real estate data.
+        """
+        self.housing = housing_df
+        self.colormap = LinearColormap(
+            ['green', 'blue', 'orange', 'red', 'purple', 'brown', 'black'],
+            vmin=self.housing['price'].min(),
+            vmax=self.housing['price'].max()
+        )
+
+    def add_markers(self, gmap: folium.Map) -> None:
+        """
+        Add markers for each real estate with color based on price.
+
+        Parameters:
+            gmap (folium.Map): The folium map object.
+        """
+        for _, row in self.housing.iterrows():
+            marker_color = self.colormap(row['price'])
+            popup_content = f"Giá: {row['price']}"
+            folium.CircleMarker(
+                location=(row['latitude'], row['longitude']),
+                radius=5,
+                color=marker_color,
+                fill=True,
+                fill_color=marker_color,
+                popup=popup_content 
+            ).add_to(gmap)
+
+    def create_map(self) -> folium.Map:
+        """
+        Create a folium map with real estate data.
+
+        Returns:
+            folium.Map: The generated folium map.
+        """
+        gmap = folium.Map(location=[21.028511, 105.804817], zoom_start=6)
+        self.colormap.add_to(gmap)
+        self.add_markers(gmap)
+        return gmap
+```
+
+#### 4.2.2. Hàm `visualize_real_estate_price`
+
+```python
+def visualize_real_estate_price(housing_df: pd.DataFrame) -> folium.Map:
+    """
+    Visualize real estate data on a map based on price.
+
+    Parameters:
+        housing_df (pd.DataFrame): The DataFrame containing the real estate data.
+
+    Returns:
+        folium.Map: The generated folium map.
+    """
+    visualizer = RealEstateVisualizerPrice(housing_df)
+    return visualizer.create_map()  # Create a folium map
+```
+
+Hàm `visualize_real_estate_price` đóng gói quy trình tạo bản đồ phân phối giá bất động sản vào một hàm duy nhất. Người dùng chỉ cần truyền vào DataFrame chứa dữ liệu bất động sản, hàm sẽ trả về một bản đồ tương tác thể hiện phân phối giá trên lãnh thổ Việt Nam.
+
+### 4.3. Tạo bản đồ phân cụm và Feature Engineering với hàm `visualize_real_estate_clusters`
+
+#### 4.3.1. `RealEstateVisualizerClusters` class
+
+Class này phục vụ mục đích trực quan hóa dữ liệu bất động them cụm dựa trên vị trí địa lý của các bất động sản. Quá trình này giúp ta hiểu rõ hơn về sự phân bố không gian của dữ liệu, tìm ra các "cụm" (cluster) những bất động sản gần nhau về mặt địa lý.
+
+1. **Thuộc tính của class và khởi tạo `__init__`:**
+
+- `housing (pd.DataFrame)`: DataFrame chứa dữ liệu bất động sản, ít nhất gồm các cột:
+  - `latitude`, `longitude`: toạ độ địa lý.
+  - `price`: giá bất động sản.
+  
+- `num_clusters (int)`: Số lượng cụm dùng cho mô hình K-Means.
+
+- `cluster_colormap (LinearColormap)`:  Dải màu biểu diễn các cụm. Ở đây: `['green', 'blue', 'orange', 'red', 'purple', 'brown', 'black']` tương ứng với các cụm từ 0 đến `num_clusters - 1`.
+
+- `cluster_centers (np.ndarray)`: Tọa độ trung tâm các cụm (sau khi mô hình K-Means được fit).
+
+- `cluster_radius (List[float])`: Bán kính cụm, được tính là khoảng cách xa nhất từ tâm cụm đến một điểm trong cụm đó.
+
+```python
+def __init__(self, housing_df:pd.DataFrame, num_clusters:int=5) -> None:
+    self.housing = housing_df
+    self.num_clusters = num_clusters
+    self.cluster_colormap = LinearColormap(
+        ['green', 'blue', 'orange', 'red', 'purple', 'brown', 'black'],
+        vmin=0,
+        vmax=num_clusters - 1
+    )
+    self.cluster_centers = None
+    self.cluster_radius = None
+```
+
+2. **Phương thức `elbow_method`:**
+
+```python
+def elbow_method(self, clustering_features:pd.DataFrame) -> np.ndarray:
+    distortions = []
+    K = range(1, 11)
+    for k in K:
+        kmeans = KMeans(n_clusters=k, random_state=0).fit(clustering_features)
+        distortions.append(kmeans.inertia_)
+    
+    # Vẽ biểu đồ elbow
+    plt.plot(K, distortions, 'bx-')
+    plt.xlabel('k')
+    plt.ylabel('Distortion')
+    plt.title('The Elbow Method showing the optimal k')
+    plt.show()
+
+    diff = np.diff(distortions)
+    return abs(diff).argmax() + 2
+```
+
+- Chạy K-Means cho k từ 1 đến 10, tính toán `inertia_` (độ méo - distortion).
+- Hiển thị biểu đồ elbow để tìm $k$ tối ưu.
+- Sử dụng điểm "gãy" (argmax của độ giảm) để chọn k. Cách làm đơn giản: `abs(diff).argmax() + 2`.
+- Trả về k tối ưu.
+
+3. **Phương thức `distance_to_center`:**
+
+```python
+def distance_to_center(self, housing:pd.DataFrame) -> None:
+    for idx, center in enumerate(self.cluster_centers):
+        housing[f'Distance to center {idx}'] = housing.apply(
+            lambda row: haversine(center, (row['latitude'], row['longitude'])),
+            axis=1
+        )
+```
+
+- Với mỗi cụm, tính khoảng cách từ mỗi bất động sản đến tâm cụm.
+- `haversine` tính khoảng cách trên bề mặt trái đất giữa hai điểm (latitude, longitude) bằng đường chim bay.
+- Thêm cột `Distance to center {idx}` vào DataFrame.
+
+4. **Phương thức `calculate_cluster_radius`:**
+
+```python
+def calculate_cluster_radius(self) -> None:
+    self.cluster_radius = [
+        max(
+            haversine(center, (point.latitude, point.longitude))
+            for point in self.housing[self.housing['Cluster'] == idx].itertuples()
+        )
+        for idx, center in enumerate(self.cluster_centers)
+    ]
+```
+
+- Tính bán kính mỗi cụm bằng khoảng cách lớn nhất từ tâm cụm đến một điểm trong cụm.
+- `itertuples()` lặp qua DataFrame theo dạng tuple, truy cập `point.latitude`, `point.longitude`.
+
+5. **Phương thức `fit_kmeans`:**
+
+```python
+def fit_kmeans(self) -> None:
+    clustering_features = self.housing[['latitude', 'longitude']]
+    self.num_clusters = self.elbow_method(clustering_features)  # Find the optimal number of clusters
+    
+    kmeans = KMeans(n_clusters=self.num_clusters, random_state=0).fit(clustering_features)
+    self.cluster_centers = kmeans.cluster_centers_
+    self.housing['Cluster'] = kmeans.labels_
+    
+    self.distance_to_center(self.housing)
+    self.calculate_cluster_radius()
+```
+
+- Lấy `latitude` và `longitude` làm đặc trưng phân cụm.
+- Gọi `elbow_method` để tìm số cụm tốt nhất (tự động điều chỉnh `self.num_clusters`).
+- Chạy K-Means với số cụm đã xác định, thu được:
+  - `self.cluster_centers`: tâm cụm.
+  - `self.housing['Cluster']`: mỗi bất động sản được gán vào một cụm.
+- Tính khoảng cách từ mỗi điểm đến tâm cụm (`distance_to_center`) và bán kính cụm (`calculate_cluster_radius`).
+
+6. **Phương thức `add_markers`:**
+
+```python
+def add_markers(self, gmap: folium.Map) -> None:
+    for _, row in self.housing.iterrows():
+        cluster_label = row['Cluster']
+        marker_color = self.cluster_colormap(cluster_label)
+        popup_content = f"Giá: {row['price']}, Cụm: {cluster_label}"
+        folium.CircleMarker(
+            location=(row['latitude'], row['longitude']),
+            radius=5,
+            color=marker_color,
+            fill=True,
+            fill_color=marker_color,
+            popup=popup_content 
+        ).add_to(gmap)
+```
+
+- Vẽ các điểm bất động sản lên bản đồ, màu sắc theo cụm.
+- Popup hiển thị giá và cụm của bất động sản.
+
+7. **Phương thức `create_map`:**
+
+```python
+def create_map(self) -> folium.Map:
+    gmap = folium.Map(location=[21.028511, 105.804817], zoom_start=6)
+    self.cluster_colormap.add_to(gmap)
+    self.add_markers(gmap)
+    return gmap
+```
+
+- Tạo bản đồ folium, thêm bảng màu cụm, thêm marker từng bất động sản.
+- Trả về bản đồ.
+
+**Ý nghĩa thực tiễn:**
+
+Lớp `RealEstateVisualizerCluster` giúp phân tích không gian dữ liệu bất động sản, tìm ra các cụm bất động sản gần nhau về mặt địa lý. Việc này giúp người dùng hiểu rõ hơn về phân bố không gian của dữ liệu, tìm ra các khu vực có giá trị đặc biệt, hay phát hiện ra các cụm bất động sản có giá trị cao hoặc thấp.
+
+```python
+class RealEstateVisualizerCluster:
+    """
+    A class to visualize real estate data on a map.
+
+    Attributes:
+        housing (pd.DataFrame): The DataFrame containing the real estate data.
+        num_clusters (int): The number of clusters for KMeans clustering.
+        colormap (LinearColormap): The color map for the real estate prices.
+        cluster_centers (np.ndarray): The coordinates of the cluster centers.
+        cluster_radius (List[float]): The radius of the clusters.
+
+    Methods:
+        fit_kmeans: Fit a KMeans model to the real estate data and add cluster labels to the DataFrame.
+        calculate_cluster_radius: Calculate the radius of the clusters.
+        add_cluster_visualization: Add cluster visualization to the map.
+        add_markers: Add markers for each real estate with color based on price.
+        create_map: Create a folium map with real estate data and cluster visualization.
+    """
+    def __init__(self, housing_df:pd.DataFrame, num_clusters:int=5) -> None:
+        """
+        Initialize the RealEstateVisualizer object.
+
+        Parameters:
+            housing_df (pd.DataFrame): The DataFrame containing the real estate data.
+            num_clusters (int): The number of clusters for KMeans clustering, default is 5.
+
+        Returns:
+            RealEstateVisualizer: The RealEstateVisualizer object.
+        """
+        self.housing = housing_df
+        self.num_clusters = num_clusters
+        self.cluster_colormap = LinearColormap(
+            ['green', 'blue', 'orange', 'red', 'purple', 'brown', 'black'],
+            vmin=0,
+            vmax=num_clusters - 1
+        )
+        self.cluster_centers = None
+        self.cluster_radius = None
+
+    def fit_kmeans(self) -> None:
+        """
+        Fit a KMeans model to the real estate data and add cluster labels to the DataFrame.
+        """
+        clustering_features = self.housing[['latitude', 'longitude']] # Choose the clustering features
+        self.num_clusters = self.elbow_method(clustering_features)
+        kmeans = KMeans(n_clusters=self.num_clusters, random_state=0).fit(clustering_features)
+        self.cluster_centers = kmeans.cluster_centers_ # Get the cluster centers
+        self.housing['Cluster'] = kmeans.labels_ # Add the cluster labels to the housing DataFrame
+        self.distance_to_center(self.housing)
+        self.calculate_cluster_radius()
+
+    def elbow_method(self, clustering_features:pd.DataFrame) -> np.ndarray:
+        """
+        Find the optimal number of clusters using the elbow method.
+
+        Parameters:
+            clustering_features (pd.DataFrame): The features used for clustering.
+
+        Returns:
+            np.ndarray: The coordinates of the cluster centers.
+        """
+        distortions = []
+        K = range(1, 11)
+        for k in K:
+            kmeans = KMeans(n_clusters=k, random_state=0).fit(clustering_features)
+            distortions.append(kmeans.inertia_)
+            
+        # plt.figure(figsize=(16,8))
+        plt.plot(K, distortions, 'bx-')
+        plt.xlabel('k')
+        plt.ylabel('Distortion')
+        plt.title(f'The Elbow Method showing the optimal $k$')
+        plt.show()
+
+        diff = np.diff(distortions)
+        return abs(diff).argmax() + 2
+    
+    def distance_to_center(self, housing:pd.DataFrame) -> None:
+        """
+        Calculate the distance of each real estate to the cluster center.
+
+        Parameters:
+            housing (pd.DataFrame): The DataFrame containing the real estate data.
+        """
+        for idx, center in enumerate(self.cluster_centers):
+            housing[f'Distance to center {idx}'] = housing.apply(
+                lambda row: haversine(center, (row['latitude'], row['longitude'])),
+                axis=1
+            )
+
+    def calculate_cluster_radius(self) -> None:
+        """
+        Calculate the radius of the clusters, which is the distance from the cluster center to the farthest point in the cluster.
+        """
+        self.cluster_radius = [
+            max(
+                haversine(center, (point.latitude, point.longitude))
+                for point in self.housing[self.housing['Cluster'] == idx].itertuples() # itertuples is a function to iterate through the DataFrame as tuples
+            )
+            for idx, center in enumerate(self.cluster_centers)
+        ]
+    
+    def add_markers(self, gmap: folium.Map) -> None:
+        """
+        Add markers for each real estate with color based on price.
+
+        Parameters:
+            gmap (folium.Map): The folium map object.
+        """
+        for _, row in self.housing.iterrows():
+            cluster_label = row['Cluster']
+            marker_color = self.cluster_colormap(cluster_label)
+            popup_content = f"Giá: {row['price']}, Cụm: {cluster_label}"
+            folium.CircleMarker(
+                location=(row['latitude'], row['longitude']),
+                radius=5,
+                color=marker_color,
+                fill=True,
+                fill_color=marker_color,
+                # popup is the text that appears when you click on the marker
+                popup=popup_content 
+            ).add_to(gmap)
+
+    def create_map(self) -> folium.Map:
+        gmap = folium.Map(location=[21.028511, 105.804817], zoom_start=6)
+        self.cluster_colormap.add_to(gmap)
+        self.add_markers(gmap)
+        return gmap
+```
+
+#### 4.3.2. Hàm `visualize_real_estate_clusters`
+
+```python
+def visualize_real_estate_clusters(housing_df:pd.DataFrame, num_clusters:int=5) -> folium.Map:
+    visualizer = RealEstateVisualizerCluster(housing_df, num_clusters) 
+    visualizer.fit_kmeans() # Fit KMeans model and add cluster labels to the dataframe
+    return visualizer.create_map() # Create a folium map
+```
+
+Hàm `visualize_real_estate_clusters` đóng gói quy trình tạo bản đồ phân cụm dữ liệu bất động sản vào một hàm duy nhất. Người dùng chỉ cần truyền vào DataFrame chứa dữ liệu bất động sản, hàm sẽ trả về một bản đồ tương tác thể hiện phân cụm dữ liệu.
+
+### 4.4. Tạo bản đồ Heatmap dựa trên giá bất động sản với hàm `visualize_real_estate_price_heatmap`
+
+### 4.5. Chạy chương trình
+
+1. Đầu tiên, chúng ta cần lọc dữ liệu bất động sản theo lãnh thổ Việt Nam:
+
+    ```python
+    housing_cleaned_coordinations = check_coordinates_in_vietnam(shapefile_path='./vietnam_Vietnam_Country_Boundary/extracted_files/vietnam_Vietnam_Country_Boundary.shp', housing_df=data_cleaned)
+    ```
+
+    Trong đó, `shapefile_path` là đường dẫn đến file shapefile chứa thông tin lãnh thổ Việt Nam, `data_cleaned` là DataFrame chứa dữ liệu bất động sản.
+
+2. Tiếp theo, chúng ta sẽ tạo bản đồ phân phối giá bất động sản:
+
+    ```python
+    gmap_1 = visualize_real_estate_price(housing_cleaned_coordinations)
+    gmap_1.save("foliumVisualizationPrice.html")
+    webbrowser.open_new_tab('foliumVisualizationPrice.html')
+    ```
+
+    Trong phần này, `gmap_1` là bản đồ phân phối giá bất động sản, được lưu vào file `foliumVisualizationPrice.html` và mở trên trình duyệt `webbrowser`.
+    \
+    ![Price Viz](./images/price_viz.png)
+
+    _Hình 4: Bản đồ phân phối giá bất động sản trên lãnh thổ Việt Nam_
+    \
+    **Nhận xét:**
+
+    1. **Đặc trưng không gian của giá:** Nhìn tổng quan, các màu sắc phân bố có vẻ khá đa dạng, không tập trung một màu duy nhất ở một khu vực. Điều này có thể hàm ý rằng giá bất động sản tại khu vực trung tâm TPHCM khá phân tán, không đồng đều.
+
+    2. **Mức độ tập trung:** Có thể quan sát thấy số lượng bất động sản tập trung đông hơn ở các quận trung tâm, quanh sân bay hoặc các trục đường lớn. Đây là điều hợp lý vì các khu vực trung tâm thường có mật độ bất động sản cao. Vùng rìa, ngoại thành hoặc các khu vực ít phát triển hơn có ít điểm hơn.
+
+    3. **Ứng dụng trực quan:** Việc biểu diễn dữ liệu bất động sản trên bản đồ giúp người xem nhanh chóng nhận ra phân bố và so sánh giá giữa các khu vực. Điều này hữu ích cho cả nhà phân tích thị trường, môi giới và người mua bán bất động sản trong việc đưa ra quyết định và đánh giá chung về thị trường.
+
+ 3. Tiếp theo, chúng ta sẽ tạo bản đồ phân cụm dữ liệu bất động sản:
+
+    ```python
+    gmap_2 = visualize_real_estate_clusters(housing_cleaned_coordinations)
+    gmap_2.save("foliumVisualizationCluster.html")
+    webbrowser.open_new_tab('foliumVisualizationCluster.html')
+    ```
+
+    Tương tự như cách làm ở `gmap_1`, nhưng ở đây chúng ta sẽ thu được thêm elbow plot để xác định số cụm tối ưu cũng như các đặc trưng khác được sinh ra từ việc phân cụm dữ liệu:
+
+    ![Elbow Plot](./images/elbow.png)
+
+    _Hình 6: Biểu đồ Elbow để xác định số cụm tối ưu_
+    \
+    Trong trường hợp này, số cụm tối ưu được xác định là 2 và ta được bản đồ phân cụm như sau:
+
+    ![Cluster Viz](./images/cluster_viz.png)
+
+    _Hình 5: Bản đồ phân cụm bất động sản trên lãnh thổ Việt Nam_
+    \
+    **Nhận xét:** 
+
+    1. **Phân cụm không gian:** Ta thấy rõ ràng có hai cụm chính được hình thành, thể hiện qua hai màu khác nhau (ví dụ: cụm màu tím ở phía tây – trung tâm, và cụm màu xanh lá tập trung nhiều hơn ở phía đông nam).
+
+    2. **Khu vực và phân bố:**
+       - Cụm màu tím: Tập trung rất dày ở khu vực nội thành hoặc các vùng giáp ranh trung tâm Thành phố Hồ Chí Minh. Sự tập trung này có thể phản ánh một thị trường bất động sản sôi động, nhiều lựa chọn hoặc giá trị tài sản tương đối đồng đều.
+       - Cụm màu xanh lá: Phân bố về phía đông, có vẻ thưa hơn so với cụm tím. Khu vực này có thể là quận 2, Quận 9, Thủ Đức (nay thuộc TP. Thủ Đức), hoặc các vùng lân cận. Việc tách biệt địa lý này có thể do rào cản tự nhiên (như sông Sài Gòn) hoặc do các đặc điểm thị trường, quy hoạch đô thị khác nhau.
+
+    3. **Ý nghĩa phân tích:**
+       - Phân cụm giúp nhận diện ranh giới hoặc đặc trưng từng khu vực địa lý. Mỗi cụm có thể mang những đặc điểm chung về giá cả, loại hình bất động sản, mức độ phát triển hạ tầng, tiện ích, giao thông, v.v.
+       - Việc có 2 cụm lớn, màu sắc khác biệt, gợi ý rằng thị trường bất động sản ở TPHCM có thể chia thành ít nhất hai khu vực khá khác biệt về vị trí và có lẽ cả về mức giá, mật độ và loại hình.
+
+    Ta cũng sẽ thu được DataFrame mới sau khi phân cụm với các features được thêm vào như: `Cluster`, `Distance to center 0`, `Distance to center 1`.
+
+    | id      | price | area | bedrooms | wc       | n_floors | car_place | latitude   | longitude    | Cluster | Distance to center 0 | Distance to center 1 |
+    |---------|-------|------|----------|----------|----------|-----------|------------|--------------|---------|----------------------|----------------------|
+    | 121356  | 0.79  | 57   | 2.000000 | 2.000000 | 1.0      | 0         | 10.713820  | 106.589326   | 1       | 19.349504            | 10.874742            |
+    | 115827  | 2.60  | 16   | 4.000000 | 3.000000 | 3.0      | 0         | 10.767127  | 106.659121   | 1       | 9.791375             | 3.401934             |
+    | 115833  | 3.00  | 32   | 4.000000 | 2.069591 | 5.0      | 1         | 10.745886  | 106.639292   | 1       | 12.831323            | 5.458846             |
+    | 115834  | 4.60  | 38   | 3.000000 | 4.000000 | 3.0      | 1         | 10.755020  | 106.637447   | 1       | 12.511259            | 4.487381             |
+    | 115837  | 3.45  | 76   | 4.000000 | 4.000000 | 4.0      | 1         | 10.867853  | 106.623154   | 1       | 14.447282            | 8.500217             |
+    | ...     | ...   | ...  | ...      | ...      | ...      | ...       | ...        | ...          | ...     | ...                  | ...                  |
+    | 88818   | 9.50  | 46   | 4.000000 | 4.000000 | 4.0      | 1         | 10.791831  | 106.671614   | 1       | 7.584297             | 2.876457             |
+    | 86770   | 1.95  | 48   | 2.000000 | 2.000000 | 1.0      | 0         | 10.710682  | 106.618825   | 1       | 16.921170            | 9.774195             |
+    | 86258   | 10.20 | 56   | 3.000000 | 4.000000 | 3.0      | 1         | 10.801764  | 106.711032   | 0       | 3.148295             | 7.209409             |
+    | 86002   | 6.20  | 47   | 4.000000 | 5.000000 | 5.0      | 1         | 10.819914  | 106.698770   | 0       | 4.710059             | 6.469803             |
+    | 108530  | 0.001 | 30   | 1.695659 | 1.264540 | 2.0      | 0         | 10.852466  | 106.660611   | 1       | 10.044947            | 6.643871             |
+
+    [5833 rows × 12 columns]
+
+4.
+
+## 5. Feature Selection
+    
