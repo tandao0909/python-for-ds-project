@@ -2,8 +2,12 @@
 
 - [Table of contents](#table-of-contents)
 - [I. Data Crawling and Preprocessing](#i-data-crawling-and-preprocessing)
-  - [Chuyển đổi dữ liệu](#chuyển-đổi-dữ-liệu)
+  - [Thu thập dữ liệu](#thu-thập-dữ-liệu)
     - [Mục tiêu](#mục-tiêu)
+    - [Quy trình thu thập dữ liệu](#quy-trình-thu-thập-dữ-liệu)
+      - [Cách script hoạt động](#cách-script-hoạt-động)
+  - [Chuyển đổi dữ liệu](#chuyển-đổi-dữ-liệu)
+    - [Mục tiêu](#mục-tiêu-1)
     - [Xử lý định dạng của Data Frame](#xử-lý-định-dạng-của-data-frame)
     - [Trích xuất dữ liệu từ cột `Description` và `Title`](#trích-xuất-dữ-liệu-từ-cột-description-và-title)
       - [Tổng quan, ý tưởng](#tổng-quan-ý-tưởng)
@@ -43,6 +47,203 @@
   - [7. Xây dựng pipeline với `HousingPipeline.py`](#7-xây-dựng-pipeline-với-housingpipelinepy)
 
 # I. Data Crawling and Preprocessing
+
+## Thu thập dữ liệu
+
+### Mục tiêu
+Thu thập dữ liệu cần thiết phục vụ cho bài toán từ trang web https://batdongsan.vn. Tuy nhiên bài toán đặt ra chỉ thu thập dữ liệu các bài đăng bất động sản trong khu vực thành phố Hồ Chí Minh nên nhóm thực hiện thay đổi đường dẫn để thu thập dư liệu thành https://batdongsan.vn/filter?options=on&gia_tri_tinh_chon=1&priceMin=0&priceMax=400&areaMin=0&areaMax=500& - chỉ bao gồm các bất động sản:
+
+- Thuộc khu vực thành phố Hồ Chí Minh
+- Mức giá từ 0 triệu đến 40 tỷ
+- Diện tích từ 0 đến 500m2
+
+Kết quả của quá trình thu thập dữ liệu sẽ là một file csv trong đó chứa thông tin của các bất động sản bao gồm:
+- Date: Ngày đăng tin
+- Type: Loại tin
+- ID: Mã bài đăng
+- Title: Tiêu đề bài đăng
+- Location1: Địa chỉ 1 - Quận, Thành Phố
+- Location2: Địa chỉ 2 - tên đường, phường... (nằm trong chi tiết bài đăng)
+- Description: Mô tả về bất động sản
+- Area: Diện tích
+- Bedrooms: Số phòng ngủ
+- Legal: Pháp lý
+- WC: Số phòng vệ sinh
+- House orientation: Hướng nhà
+- Furniture: Tình trạng nội thất
+- Price: Mức giá (Biến mục tiêu)
+
+Yêu cầu của đầu ra:
+- Chứa đầy đủ những thông tin cần thiết.
+- Dữ liệu được làm sạch phần nào, dễ đọc, và chính xác.
+- Tốc độ thu thập dữ liệu phải nhanh, ít tốn tài nguyên.
+
+### Quy trình thu thập dữ liệu
+Truy cập vào đường dẫn được cung cấp $\to$ Lấy ra đường dẫn dẫn đến chi tiết của các bài post, đồng thời là Location 1 (thông tin về quận của bất động sản, trong chi tiết bài post sẽ không có) $\to$ Duyệt qua các đường dẫn đã thu thập được, trích xuất thông tin chi tiết từ các bài đăng $\to$ Tổng hợp, chuẩn hóa và xuất ra file csv.
+
+Quy trình trích xuất thông tin sử dụng một số công cụ quen thuộc trong việc crawl data như: `requests`, `BeautifulSoup`, `regex`.
+
+Tuy nhiên việc thu thập từng trang như vậy chưa thực sự tối ưu về mặt thời gian, nên nhóm quyết định chạy script trên 10 luồng cùng một lúc bằng thư viện `ThreadPoolExecutor`.
+
+#### Cách script hoạt động
+
+```python
+def get_data(start_page):
+    """
+    Crawl data from the website starting from the given page.
+
+    Args:
+        start_page (int): The starting page number.
+
+    Returns:
+        DataFrame: A DataFrame containing the crawled data from a specific page.
+    """
+    # Define the structure of the DataFrame
+    # Location 1 is taken from the main page post interface, Location 2 is taken from the detailed post
+    report = pd.DataFrame(columns=['Date', 'Type', 'ID', 'Title', 'Location1', 'Location2', 'Description', 'Area', 'Bedrooms', 'Legal', 'WC', 'House orientation', 'Furniture', 'Price'])
+
+    # Perform data crawling from start_page to start_page + n_iter
+    for i in range(start_page, start_page + n_iter):
+        print(f"------Start crawl page {i}------")
+        # Get basic information of 25 posts on the interface of page i
+        try:
+            response = requests.get(f"{url}page={i}")
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
+            # Select the elements containing the links to the posts
+            elements = soup.select('#danhmuc > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > a')
+            # Extract and clean the location1 information from the selected elements (location 1 includes district and city names)
+            location1 = [item.text.replace('\n', '').strip() for item in soup.select('.card-content .description')]
+            location1 = [' '.join(item.split()) for item in location1]
+        except requests.RequestException as e:
+            print(f"Error fetching page {i}: {e}")
+            continue
+        # Extract the links of the posts from elements
+        links = [element['href'] for element in elements]
+        n = len(links)
+        data = []
+        # Crawl data from each post
+        for j in range(n):
+            try:
+                post_response = requests.get(links[j])
+                post_response.raise_for_status()
+                post_soup = BeautifulSoup(post_response.text, 'html.parser')
+                # Extract the title
+                title = post_soup.select_one('h1').text
+                # Extract the location 2 (street name, ward)
+                location2 = post_soup.select_one('.footer').text.strip().split('\n')[0]
+                # Extract the description of the post
+                description = post_soup.select_one('#more1').text.strip()
+                # Extract the params (Area, Bedroom, Legal, WC, House orientation, Furniture, Price) of the post
+                params = get_params(post_soup.select_one('.box-characteristics').text)
+                # Extract the post information (Date, Type, ID)
+                post_info = [item.text.strip() for item in post_soup.select('.row.mat-42 .box-text .col .value')]
+                # Concatenate all extracted information into a single list
+                tmp = post_info + [title, location1[j], location2, description] + params
+                print(f"\tCrawled post {j+1}/{n} on page {i}")
+            except requests.RequestException as e:
+                print(f"Error fetching post {links[j]}: {e}")
+                continue
+            except Exception as e:
+                print(f"Error extracting data from post {links[j]}: {e}")
+                continue
+            # Append the extracted information to the data list
+            data.append(tmp)
+        # If data is not empty, convert it to a DataFrame and save it to a CSV file
+        if data:
+            # Convert list data of a page to a DataFrame and save it to a CSV file
+            matrix_data = np.vstack([item for item in data])
+            data_page = pd.DataFrame(matrix_data, columns=report.columns)
+            data_page.to_csv(f'data/page{i}.csv', sep="\t", index=False)
+            # Concatenate the data of the page to the report
+            report = pd.concat([report, data_page], axis=0)
+            report.set_index(np.arange(len(report)), inplace=True)
+            print(f"------Page{i} - Done!------\n\n")
+
+    return report
+```
+
+Về cơ bản đoạn script bên trên sẽ được sử dụng để thu thấp dữ liệu của `n_iter` trang, với trang bắt đầu crawl là `start_page`.
+
+Giao diện của một trang sẽ như sau:
+
+![alt text](images/page_screen.png)
+
+Trong một trang như vậy, script sẽ trích xuất hai đối tượng:
+- `elements` các box của post $\to$ từ đây ta có thể lấy được đường dẫn đến các bài đăng.
+- `location1` - địa chỉ chung của bài bất động sản (quận, thành phố), thông tin này chỉ được cung cấp ở giao diện page, không xuất hiện trong giao diện chi tiết bài đăng.
+
+Sau khi đó được link của những bài post xuất hiện trong trang, ta sẽ tiến hành trích xuất dữ liệu như: `Date, Type, ID, Title, Location2, Description, Area, Bedrooms, Legal, WC, House orientation, Furniture, Price` các bài đăng chi tiết:
+
+![alt text](images/screen_post.png)
+
+Riêng với dữ liệu được lưu trong trong element `box-characteristics` (html) thì sau khi đưa về dạng text, nhóm thiết kế thêm một bộ lọc để trích xuất các thông tin cần thiết về thông số của căn nhà trong đoạn text này (element này ở các bài post khác nhau có thể khác nhau, có bài có Hướng nhà, Hướng ban công, có bài thậm chí còn không có Số phòng ngủ, WC). Việc trích xuất các thông tin từ đoạn text do hàm `get_params` đảm nhận.
+
+```python
+def get_params(text):
+    """
+    Extract parameters from the given text using regular expressions.
+
+    Args:
+        text (str): The text to extract parameters from.
+
+    Returns:
+        list: A list of extracted parameters (Area, Bedroom, Legal, WC, House orientation, Furniture, Price).
+    """
+    # Regular expressions pattern for extracting parameters
+    reg_pattern = {
+        "Area": "Diện tích\s+(\d+)",
+        "Bedroom": "Số phòng ngủ\s+(\d+)",
+        "Legal": "Pháp lý\s+([^\n]+)",
+        'WC': "Số toilet\s+(\d+)",
+        'House orientation': "Hướng nhà\n+\s+(.+)",
+        "Furniture": "Nội thất\n+\s+(.+)",
+        "Price": "Mức giá\n+\s+(.+)"
+    }
+    # Perform the search for information according to the given pattern, if not found, return np.nan
+    params = []
+    for name in reg_pattern:
+        try:
+            params.append(re.search(r"{}".format(reg_pattern[name]), text).group(1))
+        except:
+            params.append(np.nan)
+    return params
+```
+`get_params` nhận vào một đoạn text sau đó sử dụng `regex` để trích xuất thông tin cần thiết: `Area, Bedroom, Legal, WC, House orientation, Furniture, Price`. Nếu thông tin nào bị khuyết thì điền bằng `nan`.
+
+Sau khi đã hoàn tất tất cả các qui trình trên thì script sẽ chuyển data thu thập được trong một trang thành DataFrame, lưu lại dưới dạng `page*.csv`. Sau đó gộp vào DataFrame `report` - chứa dữ liệu cuối cùng cho quá trình cào.
+
+Tuy nhiên như đã đề cập ở trên, việc cào từng trang như vậy vẫn chưa thực sự tối ưu về mặt thời gian. Nên ta sử dụng đa luồng để giải quyết vấn đề này
+
+
+```python
+# Create a ThreadPoolExecutor with 10 threads to crawl data faster
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        # Submit tasks to the executor
+        futures = [executor.submit(get_data, start_page) for start_page in num_pages]
+        # Collect results from the futures
+        list_report = [future.result() for future in futures]
+
+```
+
+Đoạn code trên tạo một `ThreadPoolExecutor` với 10 luồng. Sau đó, gửi các tác vụ thu thập dữ liệu `get_data` cho từng trang bắt đầu trong `num_pages` đến nhóm luồng này. Mỗi tác vụ được gửi dưới dạng một future. Cuối cùng, nó thu thập kết quả từ các future này và lưu trữ chúng trong danh sách list_report.
+
+Nhóm tiền hành crawl data trên 500 trang trên 10 luồng thì `num_pages` (list lưu `start_page` cho từng luồng) và `num_iter` (quy định số trang mà mỗi luồng sẽ cào) sẽ được set như sau:
+
+```python
+# List of starting pages for each thread
+num_pages = [1,51,101,151,201,251,301,351,401,451]
+# Number of iterations (pages) to crawl per thread
+n_iter = 50
+```
+
+Sau đó script thực hiện concat tất cả DataFrame trong `list__report` và lưu lại dưới dạng file csv
+```python
+    # Concatenate all results into a single DataFrame
+    df = pd.concat(list_report, axis=0)
+    # Save the final DataFrame to a CSV file
+    df.to_csv('raw_data.csv', sep='\t')
+```
 
 ## Chuyển đổi dữ liệu
 

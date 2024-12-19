@@ -107,11 +107,13 @@ def get_data(start_page):
             data.append(tmp)
         # If data is not empty, convert it to a DataFrame and save it to a CSV file
         if data:
+            # Convert list data of a page to a DataFrame and save it to a CSV file
             matrix_data = np.vstack([item for item in data])
             data_page = pd.DataFrame(matrix_data, columns=report.columns)
+            data_page.to_csv(f'data/page{i}.csv', sep="\t", index=False)
+            # Concatenate the data of the page to the report
             report = pd.concat([report, data_page], axis=0)
             report.set_index(np.arange(len(report)), inplace=True)
-            report.to_csv(f'data/page{i}.csv', sep="\t", index=False)
             print(f"------Page{i} - Done!------\n\n")
 
     return report
