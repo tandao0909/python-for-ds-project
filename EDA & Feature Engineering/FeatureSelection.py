@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from collections import Counter
-from sklearn.feature_selection import VarianceThreshold, SelectKBest, f_regression, mutual_info_regression
+from sklearn.feature_selection import VarianceThreshold, SelectKBest, mutual_info_regression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import make_pipeline
@@ -11,21 +11,21 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from typing import List, Set
 
 class FeatureSelector:
-    def __init__(self, X: pd.DataFrame, y: pd.Series, variance_threshold: float = 0.1, k_best: int = 5, top_k_f_test: int = 7):
+    def __init__(self, X: pd.DataFrame, y: pd.Series, variance_threshold: float = 0.1, k_best: int = 5, top_k_mi: int = 7):
         """
         Initialize the feature selector with the dataset and feature selection parameters.
         
         :param X: The feature matrix (pd.DataFrame).
         :param y: The target variable (pd.Series).
         :param variance_threshold: Threshold for VarianceThreshold method to remove low variance features.
-        :param k_best: Number of top features to select using SelectKBest (based on F-regression).
-        :param top_k_f_test: Number of top features to select based on F-test and Mutual Information.
+        :param k_best: Number of top features to select using SelectKBest (based on Mutual Information).
+        :param top_k_mi: Number of top features to select based on Mutual Information.
         """
         self.X = X
         self.y = y
         self.variance_threshold = variance_threshold
         self.k_best = k_best
-        self.top_k_f_test = top_k_f_test
+        self.top_k_mi = top_k_mi
         self.features_selected: List[Set[str]] = []
 
     def variance_threshold_selection(self) -> Set[str]:
@@ -42,43 +42,37 @@ class FeatureSelector:
 
     def select_k_best(self) -> Set[str]:
         """
-        Apply SelectKBest with F-regression to select the top k features.
+        Apply SelectKBest with Mutual Information to select the top k features.
         
         :return: A set of selected feature names.
         """
-        selector = SelectKBest(f_regression, k=self.k_best).fit(self.X, self.y)
+        selector = SelectKBest(mutual_info_regression, k=self.k_best).fit(self.X, self.y)
         selected_features = set(self.X.columns[selector.get_support()])
         self.features_selected.append(selected_features)
         return selected_features
 
-    def f_test_and_mutual_information(self) -> Set[str]:
+    def mutual_information_selection(self) -> Set[str]:
         """
-        Compute F-test and Mutual Information scores and select the top features based on the F-test.
+        Compute Mutual Information scores and select the top features based on the scores.
         
         :return: A set of selected feature names.
         """
-        f_test, p_values = f_regression(self.X, self.y)
         mi = mutual_info_regression(self.X, self.y)
 
         # Normalize the scores for comparison
-        epsilon = 1e-200
-        f_test_normalized = -np.log10(p_values + epsilon)
-        f_test_normalized /= f_test_normalized.max()
-
         mi_normalized = mi / mi.max()
 
         # Create a DataFrame to store the scores
         feature_scores = pd.DataFrame({
             'Feature': self.X.columns,
-            'F-test': f_test_normalized,
             'Mutual Information': mi_normalized
         })
 
-        # Sort features by F-test in descending order
-        feature_scores = feature_scores.sort_values(by='F-test', ascending=False)
+        # Sort features by Mutual Information in descending order
+        feature_scores = feature_scores.sort_values(by='Mutual Information', ascending=False)
 
-        # Select the top_k features based on the F-test
-        top_features = set(feature_scores.head(self.top_k_f_test)['Feature'].tolist())
+        # Select the top_k features based on Mutual Information
+        top_features = set(feature_scores.head(self.top_k_mi)['Feature'].tolist())
         self.features_selected.append(top_features)
         return top_features
 
@@ -158,8 +152,8 @@ class FeatureSelector:
         print("Running SelectKBest...")
         self.select_k_best()
         
-        print("Running F-test and Mutual Information...")
-        self.f_test_and_mutual_information()
+        print("Running Mutual Information...")
+        self.mutual_information_selection()
         
         print("Running GridSearchCV...")
         self.grid_search_feature_selection()

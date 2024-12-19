@@ -11,25 +11,36 @@
       - [Tạo ra các cột dữ liệu mới hữu ích cho bài toán](#tạo-ra-các-cột-dữ-liệu-mới-hữu-ích-cho-bài-toán)
 - [II. EDA và Feature Engineering](#ii-eda-và-feature-engineering)
   - [3 Xử lý và làm sạch dữ liệu với `DataProcessing.py`](#3-xử-lý-và-làm-sạch-dữ-liệu-với-dataprocessingpy)
-    - [3.1. `DataCleaner` class](#31-datacleaner-class)
-      - [3.1.1. Chức năng chính của `DataCleaner`](#311-chức-năng-chính-của-datacleaner)
-      - [3.1.2. Các phương thức chính của `DataCleaner`](#312-các-phương-thức-chính-của-datacleaner)
-    - [3.2. Các hàm khác](#32-các-hàm-khác)
-    - [3.3. Chạy chương trình](#33-chạy-chương-trình)
-  - [4. Visualize Data với `Visualize.py`](#4-visualize-data-với-visualizepy)
-    - [4.1. Lọc tọa độ theo lãnh thổ Việt Nam với hàm `check_coordinates_in_vietnam`](#41-lọc-tọa-độ-theo-lãnh-thổ-việt-nam-với-hàm-check_coordinates_in_vietnam)
-      - [4.1.1. Khai báo thư viện](#411-khai-báo-thư-viện)
-      - [4.1.2. Tham số đầu vào](#412-tham-số-đầu-vào)
-      - [4.1.3. Các bước xử lý chính trong hàm](#413-các-bước-xử-lý-chính-trong-hàm)
-    - [4.2. Tạo bản đồ phân phối giá bất động sản với hàm `visualize_real_estate_price`](#42-tạo-bản-đồ-phân-phối-giá-bất-động-sản-với-hàm-visualize_real_estate_price)
-      - [4.2.1. `RealEstateVisualizerPrice` class](#421-realestatevisualizerprice-class)
-      - [4.2.2. Hàm `visualize_real_estate_price`](#422-hàm-visualize_real_estate_price)
-    - [4.3. Tạo bản đồ phân cụm và Feature Engineering với hàm `visualize_real_estate_clusters`](#43-tạo-bản-đồ-phân-cụm-và-feature-engineering-với-hàm-visualize_real_estate_clusters)
-      - [4.3.1. `RealEstateVisualizerClusters` class](#431-realestatevisualizerclusters-class)
-      - [4.3.2. Hàm `visualize_real_estate_clusters`](#432-hàm-visualize_real_estate_clusters)
-    - [4.4. Tạo bản đồ Heatmap dựa trên giá bất động sản với hàm `visualize_real_estate_price_heatmap`](#44-tạo-bản-đồ-heatmap-dựa-trên-giá-bất-động-sản-với-hàm-visualize_real_estate_price_heatmap)
-    - [4.5. Chạy chương trình](#45-chạy-chương-trình)
-  - [5. Feature Selection](#5-feature-selection)
+    - [3.1. Khai báo thư viện](#31-khai-báo-thư-viện)
+    - [3.2. `DataCleaner` class](#32-datacleaner-class)
+      - [3.2.1. Chức năng chính của `DataCleaner`](#321-chức-năng-chính-của-datacleaner)
+      - [3.2.2. Các phương thức chính của `DataCleaner`](#322-các-phương-thức-chính-của-datacleaner)
+    - [3.3. Các hàm khác](#33-các-hàm-khác)
+    - [3.4. Chạy chương trình](#34-chạy-chương-trình)
+  - [4. Xử lý, trực quan hóa dữ liệu và Feature Engineering với `Visualize.py`](#4-xử-lý-trực-quan-hóa-dữ-liệu-và-feature-engineering-với-visualizepy)
+    - [4.1. Khai báo thư viện](#41-khai-báo-thư-viện)
+    - [4.2. Lọc tọa độ theo lãnh thổ Việt Nam với hàm `check_coordinates_in_vietnam`](#42-lọc-tọa-độ-theo-lãnh-thổ-việt-nam-với-hàm-check_coordinates_in_vietnam)
+      - [4.2.1. Tham số đầu vào](#421-tham-số-đầu-vào)
+      - [4.2.2. Các bước xử lý chính trong hàm](#422-các-bước-xử-lý-chính-trong-hàm)
+    - [4.3. Tạo bản đồ phân phối giá bất động sản với hàm `visualize_real_estate_price`](#43-tạo-bản-đồ-phân-phối-giá-bất-động-sản-với-hàm-visualize_real_estate_price)
+      - [4.3.1. `RealEstateVisualizerPrice` class](#431-realestatevisualizerprice-class)
+      - [4.3.2. Hàm `visualize_real_estate_price`](#432-hàm-visualize_real_estate_price)
+    - [4.4. Tạo bản đồ phân cụm và Feature Engineering với hàm `visualize_real_estate_clusters`](#44-tạo-bản-đồ-phân-cụm-và-feature-engineering-với-hàm-visualize_real_estate_clusters)
+      - [4.4.1. `RealEstateVisualizerClusters` class](#441-realestatevisualizerclusters-class)
+      - [4.4.2. Hàm `visualize_real_estate_clusters`](#442-hàm-visualize_real_estate_clusters)
+    - [4.5. Tạo bản đồ Heatmap dựa trên giá bất động sản với hàm `visualize_real_estate_price_heatmap`](#45-tạo-bản-đồ-heatmap-dựa-trên-giá-bất-động-sản-với-hàm-visualize_real_estate_price_heatmap)
+    - [4.6. Chạy chương trình](#46-chạy-chương-trình)
+  - [5. Feature Selection với `FeatureSelection.py`](#5-feature-selection-với-featureselectionpy)
+    - [5.1. Khai báo thư viện](#51-khai-báo-thư-viện)
+    - [5.2. `FeatureSelector` class](#52-featureselector-class)
+    - [5.3. Phương pháp Variance Threshold](#53-phương-pháp-variance-threshold)
+    - [5.4. Phương pháp Select K Best](#54-phương-pháp-select-k-best)
+    - [5.5. Phương pháp Mutual Information](#55-phương-pháp-mutual-information)
+    - [5.6. Phương pháp GridSearchCV](#56-phương-pháp-gridsearchcv)
+    - [5.7. Phương pháp RandomizedSearchCV](#57-phương-pháp-randomizedsearchcv)
+    - [5.8. Chạy chương trình](#58-chạy-chương-trình)
+  - [6. Tách tập dữ liệu](#6-tách-tập-dữ-liệu)
+  - [7. Xây dựng pipeline với `HousingPipeline.py`](#7-xây-dựng-pipeline-với-housingpipelinepy)
 
 # I. Data Crawling and Preprocessing
 
@@ -333,7 +344,35 @@ Trong phần này, chúng tôi vẫn cố gắng khai thác tối đa thông tin
 
 Trước tiên, tôi sẽ giới thiệu đôi chút về `DataCleaner` class.
 
-### 3.1. `DataCleaner` class
+### 3.1. Khai báo thư viện
+
+```python
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+import requests
+import concurrent.futures
+```
+
+Trong đó:
+
+- `numpy` và `pandas` là thư viện cơ bản để xử lý dữ liệu.
+- `matplotlib.pyplot` được sử dụng để vẽ biểu đồ.
+- `StandardScaler` từ `sklearn.preprocessing` để chuẩn hóa dữ liệu.
+- `train_test_split` từ `sklearn.model_selection` để chia dữ liệu thành tập huấn luyện và tập kiểm tra.
+- `mean_squared_error` từ `sklearn.metrics` để đánh giá mô hình.
+- `KNeighborsClassifier`, `LinearRegression`, `DecisionTreeRegressor`, `RandomForestRegressor`, `GradientBoostingRegressor` từ `sklearn` để sử dụng các mô hình học máy.
+- `requests` để gửi yêu cầu HTTP đến API.
+- `concurrent.futures` để thực hiện các công việc đa luồng.
+
+### 3.2. `DataCleaner` class
 
 ```python
 class DataCleaner:
@@ -347,14 +386,14 @@ class DataCleaner:
 
 `DataCleaner` là một lớp (class) được thiết kế nhằm hỗ trợ quá trình tiền xử lý và làm sạch dữ liệu. Mục tiêu chính của lớp này là đơn giản hóa và tự động hóa các bước chuẩn hóa dữ liệu cho trường hợp bài toán dự đoán giá nhà của chúng ta. Sau đó, dữ liệu đã được làm sạch sẽ được lưu lại dưới dạng DataFrame để tiếp tục sử dụng cho các bước quan trọng kết đến.
 
-#### 3.1.1. Chức năng chính của `DataCleaner`
+#### 3.2.1. Chức năng chính của `DataCleaner`
 - Xử lý dữ liệu thô, loại bỏ những giá trị ngoại lai (outliers).
 - Chuẩn hoá lại dữ liệu đầu vào, bao gồm việc chuyển đổi và điền khuyết giá trị thiếu (missing values) thông qua các mô hình học máy.
 - Chuẩn hoá dạng dữ liệu, ví dụ như chuyển đổi dữ liệu boolean sang dạng số.
 - Trích xuất thông tin vị trí (latitude, longitude) từ địa chỉ thông qua API geocoding.
 - Cho phép thực hiện các thao tác biến đổi phân phối dữ liệu, như log transformation, để điều chỉnh độ lệch và giảm tác động của outliers lên mô hình.
 
-#### 3.1.2. Các phương thức chính của `DataCleaner`
+#### 3.2.2. Các phương thức chính của `DataCleaner`
 
 - `__init__(self, api_key: str)`: Phương thức khởi tạo `__init__` trong lớp `DataCleaner` đảm nhiệm vai trò thiết lập ban đầu cho đối tượng. Khi tạo một đối tượng `DataCleaner`, chúng ta cần truyền vào `api_key` - đây là API dùng để tương tác với dịch vụ geocoding của OpenCageData. Thông qua `api_key`, class có thể tự động gọi API, chuyển đổi địa chỉ thành tọa độ kinh độ (longitude) và vĩ độ (latitude).
     ```python
@@ -758,7 +797,7 @@ class DataCleaner:
             return df
     ```
 
-### 3.2. Các hàm khác
+### 3.3. Các hàm khác
 
 - `del_col(df: pd.DataFrame, columns: list)`: Hàm `del_col` là một hàm dùng để xóa một số cột ra khỏi DataFrame. Việc loại bỏ cột thường cần thiết khi chúng ta muốn tinh gọn dữ liệu, loại bỏ dữ liệu không liên quan, hoặc chuẩn bị dữ liệu (tùy ý) cho các bước phân tích tiếp theo. Quy trình xử lý bao gồm:
 
@@ -774,7 +813,11 @@ class DataCleaner:
 
     Tóm lại, `del_col` hỗ trợ bạn nhanh chóng loại bỏ các cột không mong muốn, giúp tập dữ liệu trở nên dễ quản lý hơn và phù hợp với mục đích phân tích, tiền xử lý hoặc mô hình hoá tiếp theo.
 
-### 3.3. Chạy chương trình
+### 3.4. Chạy chương trình
+
+```python
+from data_cleaner import DataCleaner, del_col
+```
 
 1. Đầu tiên, ta cần thực hiện lấy API Key từ OpenCage để sử dụng dịch vụ geocoding. Đăng ký tài khoản và lấy API Key tại [OpenCage API](https://opencagedata.com/).
 
@@ -876,13 +919,9 @@ class DataCleaner:
 
     [5833 rows x 9 columns]
 
-## 4. Visualize Data với `Visualize.py`
+## 4. Xử lý, trực quan hóa dữ liệu và Feature Engineering với `Visualize.py`
 
-### 4.1. Lọc tọa độ theo lãnh thổ Việt Nam với hàm `check_coordinates_in_vietnam`
-
-Hàm `check_coordinates_in_vietnam` có mục đích kiểm tra xem các điểm tọa độ (longitude, latitude) trong DataFrame về thông tin vị trí bất động sản có nằm trong lãnh thổ Việt Nam hay không. Kết quả trả về là một DataFrame chỉ chứa những tọa độ thuộc phạm vi lãnh thổ Việt Nam.
-
-#### 4.1.1. Khai báo thư viện
+### 4.1. Khai báo thư viện
 
 ```python
 import pandas as pd
@@ -914,13 +953,17 @@ from folium.plugins import HeatMap
 - `Point`, `shape`: Các hàm từ thư viện `shapely` dùng để xác định xem một điểm có nằm trong một đa giác hay không.
 - `HeatMap`: Lớp từ thư viện `folium.plugins` dùng để tạo bản đồ nhiệt.
 
-#### 4.1.2. Tham số đầu vào
+### 4.2. Lọc tọa độ theo lãnh thổ Việt Nam với hàm `check_coordinates_in_vietnam`
+
+Hàm `check_coordinates_in_vietnam` có mục đích kiểm tra xem các điểm tọa độ (longitude, latitude) trong DataFrame về thông tin vị trí bất động sản có nằm trong lãnh thổ Việt Nam hay không. Kết quả trả về là một DataFrame chỉ chứa những tọa độ thuộc phạm vi lãnh thổ Việt Nam.
+
+#### 4.2.1. Tham số đầu vào
 
 - `shapefile_path: str`: Đường dẫn đến file shapefile chứa thông tin ranh giới lãnh thổ Việt Nam. Shapefile là một định dạng dữ liệu không gian (GIS) thường được sử dụng để lưu trữ các dạng hình học như đa giác, đường, điểm,... Trong trường hợp này, shapefile chứa đường biên giới quốc gia của Việt Nam.
 
 - `housing_df: pd.DataFrame`: DataFrame chứa dữ liệu bất động sản, trong đó có các cột `longitude` (kinh độ) và `latitude` (vĩ độ).
 
-#### 4.1.3. Các bước xử lý chính trong hàm
+#### 4.2.2. Các bước xử lý chính trong hàm
 
 1. **Lấy danh sách tọa độ**: Ở đây, hàm duyệt qua từng hàng trong `housing_df`, kết hợp `longitude` và `latitude` thành tuple `(longitude, latitude)` rồi đưa vào một danh sách `coordinates_list`.
    ```python
@@ -1007,9 +1050,9 @@ def check_coordinates_in_vietnam(shapefile_path: str, housing_df: pd.DataFrame) 
     return housing_df[indices_in_vietnam]
 ```
 
-### 4.2. Tạo bản đồ phân phối giá bất động sản với hàm `visualize_real_estate_price`
+### 4.3. Tạo bản đồ phân phối giá bất động sản với hàm `visualize_real_estate_price`
 
-#### 4.2.1. `RealEstateVisualizerPrice` class
+#### 4.3.1. `RealEstateVisualizerPrice` class
 
 Mục đích chính của class này là tạo ra một bản đồ tương tác thể hiện dữ liệu bất động sản, trong đó mỗi marker đại diện cho một bất động sản, màu sắc của dấu sẽ thể hiện mức giá.
 
@@ -1138,7 +1181,7 @@ class RealEstateVisualizerPrice:
         return gmap
 ```
 
-#### 4.2.2. Hàm `visualize_real_estate_price`
+#### 4.3.2. Hàm `visualize_real_estate_price`
 
 ```python
 def visualize_real_estate_price(housing_df: pd.DataFrame) -> folium.Map:
@@ -1157,9 +1200,9 @@ def visualize_real_estate_price(housing_df: pd.DataFrame) -> folium.Map:
 
 Hàm `visualize_real_estate_price` đóng gói quy trình tạo bản đồ phân phối giá bất động sản vào một hàm duy nhất. Người dùng chỉ cần truyền vào DataFrame chứa dữ liệu bất động sản, hàm sẽ trả về một bản đồ tương tác thể hiện phân phối giá trên lãnh thổ Việt Nam.
 
-### 4.3. Tạo bản đồ phân cụm và Feature Engineering với hàm `visualize_real_estate_clusters`
+### 4.4. Tạo bản đồ phân cụm và Feature Engineering với hàm `visualize_real_estate_clusters`
 
-#### 4.3.1. `RealEstateVisualizerClusters` class
+#### 4.4.1. `RealEstateVisualizerClusters` class
 
 Class này phục vụ mục đích trực quan hóa dữ liệu bất động them cụm dựa trên vị trí địa lý của các bất động sản. Quá trình này giúp ta hiểu rõ hơn về sự phân bố không gian của dữ liệu, tìm ra các "cụm" (cluster) những bất động sản gần nhau về mặt địa lý.
 
@@ -1438,7 +1481,7 @@ class RealEstateVisualizerCluster:
         return gmap
 ```
 
-#### 4.3.2. Hàm `visualize_real_estate_clusters`
+#### 4.4.2. Hàm `visualize_real_estate_clusters`
 
 ```python
 def visualize_real_estate_clusters(housing_df:pd.DataFrame, num_clusters:int=5) -> folium.Map:
@@ -1449,9 +1492,16 @@ def visualize_real_estate_clusters(housing_df:pd.DataFrame, num_clusters:int=5) 
 
 Hàm `visualize_real_estate_clusters` đóng gói quy trình tạo bản đồ phân cụm dữ liệu bất động sản vào một hàm duy nhất. Người dùng chỉ cần truyền vào DataFrame chứa dữ liệu bất động sản, hàm sẽ trả về một bản đồ tương tác thể hiện phân cụm dữ liệu.
 
-### 4.4. Tạo bản đồ Heatmap dựa trên giá bất động sản với hàm `visualize_real_estate_price_heatmap`
+### 4.5. Tạo bản đồ Heatmap dựa trên giá bất động sản với hàm `visualize_real_estate_price_heatmap`
 
-### 4.5. Chạy chương trình
+### 4.6. Chạy chương trình
+
+```python
+from Visualize import check_coordinates_in_vietnam, 
+                    visualize_real_estate_price, 
+                    visualize_real_estate_clusters, 
+                    visualize_real_estate_price_heatmap
+```
 
 1. Đầu tiên, chúng ta cần lọc dữ liệu bất động sản theo lãnh thổ Việt Nam:
 
@@ -1535,5 +1585,270 @@ Hàm `visualize_real_estate_clusters` đóng gói quy trình tạo bản đồ p
 
 4.
 
-## 5. Feature Selection
-    
+## 5. Feature Selection với `FeatureSelection.py`
+
+### 5.1. Khai báo thư viện
+
+```python
+import numpy as np
+import pandas as pd
+from collections import Counter
+from sklearn.feature_selection import VarianceThreshold, SelectKBest, mutual_info_regression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import make_pipeline
+from sklearn.feature_selection import SelectFromModel
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+from typing import List, Set
+```
+
+Trong module này, chúng ta sẽ sử dụng các thư viện sau:
+
+- `Counter` để đếm số lần xuất hiện của các phần tử trong một list.
+- `VarianceThreshold` để loại bỏ các đặc trưng có độ biến thiên thấp.
+- `SelectKBest` để chọn ra `k` đặc trưng tốt nhất dựa trên một hàm score.
+- `mutual_info_regression` để tính toán mutual information giữa các đặc trưng và biến mục tiêu.
+- `RandomForestRegressor` và `LinearRegression` là hai mô hình hồi quy sẽ được sử dụng để chọn ra các đặc trưng quan trọng.
+- `make_pipeline` để tạo một pipeline cho việc chọn lọc đặc trưng.
+- `SelectFromModel` để chọn ra các đặc trưng quan trọng từ mô hình.
+- `GridSearchCV` và `RandomizedSearchCV` để tìm ra siêu tham số tốt nhất cho mô hình.
+- `List` và `Set` để định nghĩa kiểu dữ liệu cho các biến.
+
+### 5.2. `FeatureSelector` class
+
+- Lớp `FeatureSelector` được thiết kế để thực hiện quá trình **chọn lọc đặc trưng** (Feature Selection) một cách toàn diện và linh hoạt, dựa trên nhiều phương pháp khác nhau. Mục tiêu của lớp này là giảm số chiều của dữ liệu đầu vào, loại bỏ các đặc trưng không quan trọng hoặc gây nhiễu, từ đó cải thiện hiệu suất và độ chính xác của mô hình học máy. `FeatureSelector` bao gồm các phương pháp chọn lọc đặc trưng như sau:
+
+  1. **Variance Threshold** ứng với phương thức [`variance_threshold_selection`](#53-phương-pháp-variance-threshold).
+
+  2. **SelectKBest** ứng với phương thức [`select_k_best`](#54-phương-pháp-select-k-best).
+
+  3. **Mutual Information** ứng với phương thức [`mutual_information_selection`](#55-phương-pháp-mutual-information).
+
+  4. **GridSearchCV** ứng với phương thức [`grid_search_feature_selection`](#56-phương-pháp-gridsearchcv).
+
+  5. **RandomizedSearchCV** ứng với phương thức [`randomized_search_feature_selection`](#57-phương-pháp-randomizedsearchcv).
+
+  6. **Phương thức `combine_selected_features`:** Phương thức này sẽ kết hợp các đặc trưng được chọn từ các phương pháp khác nhau và chọn ra các đặc trưng xuất hiện trong ít nhất hai phương pháp.
+
+  7. **Phương thức `fit`:** Phương thức **`fit`** là trung tâm của lớp `FeatureSelector`, chịu trách nhiệm thực hiện toàn bộ quy trình Feature Selection. Khi được gọi, nó lần lượt:
+
+     1. **Chạy tất cả các phương pháp Feature Selection:** Gọi từng phương pháp nêu trên để chọn ra các tập hợp đặc trưng riêng lẻ.
+
+     2. **Kết hợp kết quả:** Sử dụng phương pháp `combine_selected_features` để hợp nhất các đặc trưng đã chọn từ các phương pháp khác nhau và chọn ra các đặc trưng xuất hiện trong ít nhất hai phương pháp.
+
+     3. **Trả về kết quả:** Trả về danh sách các đặc trưng cuối cùng được chọn, đảm bảo đây là những đặc trưng quan trọng và có giá trị nhất cho mô hình.
+
+- Khởi tạo `__init__` của lớp `FeatureSelector` như sau:
+
+  - `X` và `y` là feature matrix và target variable.
+  - `variance_threshold`, `k_best`, `top_k_f_mi` là các siêu tham số cho các phương pháp chọn lọc đặc trưng.
+  - `features_selected` là danh sách chứa các tập hợp đặc trưng đã chọn từ các phương pháp.
+
+```python
+class FeatureSelector:
+    def __init__(self, X: pd.DataFrame, y: pd.Series, variance_threshold: float = 0.1, k_best: int = 5, top_k_mi: int = 7):
+        """
+        Initialize the feature selector with the dataset and feature selection parameters.
+        
+        :param X: The feature matrix (pd.DataFrame).
+        :param y: The target variable (pd.Series).
+        :param variance_threshold: Threshold for VarianceThreshold method to remove low variance features.
+        :param k_best: Number of top features to select using SelectKBest (based on Mutual Information).
+        :param top_k_mi: Number of top features to select based on Mutual Information.
+        """
+        self.X = X
+        self.y = y
+        self.variance_threshold = variance_threshold
+        self.k_best = k_best
+        self.top_k_mi = top_k_mi
+        self.features_selected: List[Set[str]] = []
+
+    def variance_threshold_selection(self) -> Set[str]:
+        """
+        Apply VarianceThreshold to remove features with low variance.
+        
+        :return: A set of selected feature names.
+        """
+
+        # ... (code here) ...
+
+    def select_k_best(self) -> Set[str]:
+        """
+        Apply SelectKBest with Mutual Information to select the top k features.
+        
+        :return: A set of selected feature names.
+        """
+        
+        # ... (code here) ...
+
+    def mutual_information_selection(self) -> Set[str]:
+        """
+        Compute Mutual Information scores and select the top features based on the scores.
+        
+        :return: A set of selected feature names.
+        """
+        
+        # ... (code here) ...
+
+    def grid_search_feature_selection(self) -> Set[str]:
+        """
+        Use GridSearchCV to optimize hyperparameters of a RandomForestRegressor, and select features based on feature importance.
+        
+        :return: A set of selected feature names.
+        """
+        
+        # ... (code here) ...
+
+    def randomized_search_feature_selection(self) -> Set[str]:
+        """
+        Use RandomizedSearchCV to optimize hyperparameters of a RandomForestRegressor, and select features based on feature importance.
+        
+        :return: A set of selected feature names.
+        """
+        
+        # ... (code here) ...
+
+    def combine_selected_features(self) -> List[str]:
+        """
+        Combine selected features from all methods and count the frequency of occurrence.
+        
+        :return: A list of final selected features that appeared in two or more methods.
+        """
+        feature_counter = Counter([feature for feature_set in self.features_selected for feature in feature_set])
+
+        # Get the features that appeared the most across methods
+        final_selected_features = [feature for feature, count in feature_counter.items() if count >= 2]  # Appears in 2 or more methods
+        return final_selected_features
+
+    def fit(self) -> List[str]:
+        """
+        Run the entire feature selection process and return the final selected features.
+        
+        :return: A list of final selected feature names.
+        """
+        print("Running VarianceThreshold...")
+        self.variance_threshold_selection()
+        
+        print("Running SelectKBest...")
+        self.select_k_best()
+        
+        print("Running Mutual Information...")
+        self.mutual_information_selection()
+        
+        print("Running GridSearchCV...")
+        self.grid_search_feature_selection()
+        
+        print("Running RandomizedSearchCV...")
+        self.randomized_search_feature_selection()
+        
+        print("Combining selected features...")
+        final_features = self.combine_selected_features()
+        return final_features
+```
+
+### 5.3. Phương pháp Variance Threshold
+
+**Variance Threshold** là một phương pháp đơn giản nhưng hiệu quả trong việc chọn lọc đặc trưng (**Feature Selection**) dựa trên độ biến thiên (**variance**) của từng đặc trưng trong tập dữ liệu. Ý tưởng chính của phương pháp này là loại bỏ các đặc trưng có độ biến thiên thấp vì chúng thường không mang lại nhiều thông tin hữu ích cho mô hình Machine Learning.
+
+Phương pháp này hoạt động theo quy trình sau:
+
+1. **Tính toán phương sai (Variance):** Đối với một tập dữ liệu \( X \) với \( n \) mẫu và \( p \) đặc trưng, phương sai của một đặc trưng \( x_j \) được tính bằng công thức:
+   \[
+   \text{Var}(x_j) = \frac{1}{n} \sum_{i=1}^{n} \left( x_{ij} - \mu_j \right)^2
+   \]
+   trong đó:
+   - \( x_{ij} \) là giá trị của đặc trưng \( j \) ở mẫu \( i \),
+   - \( \mu_j = \frac{1}{n} \sum_{i=1}^{n} x_{ij} \) là giá trị trung bình của đặc trưng \( x_j \).
+
+   Phương sai đo lường mức độ phân tán của các giá trị trong một đặc trưng. Nếu phương sai gần bằng 0, các giá trị của đặc trưng đó gần như không thay đổi.
+
+2. **Lựa chọn ngưỡng (Threshold):** Chúng ta có thể đặt một ngưỡng \( t \) (thường mặc định là \( t = 0 \)). Phương pháp sẽ giữ lại các đặc trưng \( x_j \) thỏa mãn:
+   \[
+   \text{Var}(x_j) > t
+   \]
+
+    Sau khi tính toán, những đặc trưng có độ biến thiên nhỏ hơn hoặc bằng ngưỡng \( t \) được coi là không hữu ích và sẽ bị loại khỏi tập dữ liệu.
+
+Cài đặt chương trình:
+
+```python
+    def variance_threshold_selection(self) -> Set[str]:
+        """
+        Apply VarianceThreshold to remove features with low variance.
+        
+        :return: A set of selected feature names.
+        """
+        selector = VarianceThreshold(threshold=self.variance_threshold)
+        selector.fit_transform(self.X)
+        selected_features = set(self.X.columns[selector.get_support()])
+        self.features_selected.append(selected_features)
+        return selected_features
+```
+
+### 5.4. Phương pháp Select K Best
+
+### 5.5. Phương pháp Mutual Information
+
+**Mutual Information (MI)** là một phương pháp đo lường mức độ phụ thuộc giữa hai biến ngẫu nhiên. Trong Feature Selection, Mutual Information được sử dụng để đánh giá mức độ tương quan giữa một đặc trưng và biến mục tiêu. Phương pháp này không chỉ phát hiện mối quan hệ tuyến tính mà còn đo lường các mối quan hệ phi tuyến phức tạp.
+
+Ngoài ra, MI là một thước đo trong lý thuyết thông tin, cho biết lượng thông tin mà một đặc trưng \( X_j \) chia sẻ với biến mục tiêu \( y \).
+
+1. Với một đặc trưng \( X_j \) và biến mục tiêu \( y \), MI được tính:
+   \[
+   MI(X_j, y) = \iint p(x, y) \cdot \log \left( \frac{p(x, y)}{p(x) \cdot p(y)} \right) dx \, dy
+   \]
+   Trong đó:
+   - \( p(x, y) \): Phân phối xác suất chung của \( X_j \) và \( y \).
+   - \( p(x) \): Phân phối xác suất biên của \( X_j \).
+   - \( p(y) \): Phân phối xác suất biên của \( y \).
+
+2. Ý nghĩa:
+   - Nếu \( X_j \) và \( y \) độc lập, \( p(x, y) = p(x) \cdot p(y) \), do đó \( MI(X_j, y) = 0 \).
+   - Nếu \( X_j \) và \( y \) phụ thuộc mạnh, \( MI(X_j, y) > 0 \), với giá trị càng cao cho thấy \( X_j \) chứa nhiều thông tin về \( y \).
+
+3. Chuẩn hóa MI: MI có thể được chuẩn hóa để có giá trị trong khoảng \([0, 1]\) bằng cách chia cho giá trị lớn nhất:
+     \[
+     MI_{\text{norm}} = \frac{MI(X_j, y)}{\max(MI(X, y))}
+     \]
+
+4. MI có thể được tính trong cả bài toán hồi quy và phân loại, nhờ khả năng phát hiện các mối quan hệ phi tuyến phức tạp.
+
+Cài đặt chương trình:
+
+```python
+    def mutual_information_selection(self) -> Set[str]:
+        """
+        Compute Mutual Information scores and select the top features based on the scores.
+        
+        :return: A set of selected feature names.
+        """
+        mi = mutual_info_regression(self.X, self.y)
+
+        # Normalize the scores for comparison
+        mi_normalized = mi / mi.max()
+
+        # Create a DataFrame to store the scores
+        feature_scores = pd.DataFrame({
+            'Feature': self.X.columns,
+            'Mutual Information': mi_normalized
+        })
+
+        # Sort features by Mutual Information in descending order
+        feature_scores = feature_scores.sort_values(by='Mutual Information', ascending=False)
+
+        # Select the top_k features based on Mutual Information
+        top_features = set(feature_scores.head(self.top_k_mi)['Feature'].tolist())
+        self.features_selected.append(top_features)
+        return top_features
+```
+
+### 5.6. Phương pháp GridSearchCV
+
+### 5.7. Phương pháp RandomizedSearchCV
+
+### 5.8. Chạy chương trình
+
+## 6. Tách tập dữ liệu
+
+## 7. Xây dựng pipeline với `HousingPipeline.py`
