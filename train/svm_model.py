@@ -42,7 +42,7 @@ FINE_TUNE_DICT: dict[str, dict[str, list[Any]]] = {
 
 
 def train_svm_models(
-    X: pd.DataFrame, y: pd.Series, default: bool = True, fine_tune: bool = True
+    X: pd.DataFrame, y: pd.Series, default: bool = True, fine_tune: bool = False
 ):
     if default or fine_tune:
         # Clear all content in the benchmark file

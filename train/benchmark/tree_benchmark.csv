@@ -1,0 +1,2 @@
+rmse,r2,aic,bic,adjusted_r2,mape,mae,explained_variance,train_time(second),model_name,note
+5.5451634594405035e-17,1.0,-349288.2831363638,-349230.2506192906,1.0,8.643950482995346e-19,4.140137297144819e-18,1.0,0.020416259765625,Tree,Using default parameters
