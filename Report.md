@@ -14,7 +14,14 @@
       - [Xử lý các dữ liệu số](#xử-lý-các-dữ-liệu-số)
       - [Tạo ra các cột dữ liệu mới hữu ích cho bài toán](#tạo-ra-các-cột-dữ-liệu-mới-hữu-ích-cho-bài-toán)
 - [II. EDA và Feature Engineering](#ii-eda-và-feature-engineering)
-  - [3 Xử lý và làm sạch dữ liệu với `DataProcessing.py`](#3-xử-lý-và-làm-sạch-dữ-liệu-với-dataprocessingpy)
+  - [1. Khai báo thư viện và thiết lập](#1-khai-báo-thư-viện-và-thiết-lập)
+  - [2. Rút ra thông tin từ dữ liệu.](#2-rút-ra-thông-tin-từ-dữ-liệu)
+      - [2.1. Tổng quan về dữ liệu](#21-tổng-quan-về-dữ-liệu)
+      - [2.2. Phân tích phân phối các biến định lượng](#22-phân-tích-phân-phối-các-biến-định-lượng)
+      - [2.3. Tình trạng dữ liệu thiếu](#23-tình-trạng-dữ-liệu-thiếu)
+      - [2.4. Phân tích theo thời gian](#24-phân-tích-theo-thời-gian)
+      - [2.5. Các phát hiện chính](#25-các-phát-hiện-chính)
+  - [3. Xử lý và làm sạch dữ liệu với `DataProcessing.py`](#3-xử-lý-và-làm-sạch-dữ-liệu-với-dataprocessingpy)
     - [3.1. Khai báo thư viện](#31-khai-báo-thư-viện)
     - [3.2. `DataCleaner` class](#32-datacleaner-class)
       - [3.2.1. Chức năng chính của `DataCleaner`](#321-chức-năng-chính-của-datacleaner)
@@ -33,6 +40,8 @@
       - [4.4.1. `RealEstateVisualizerClusters` class](#441-realestatevisualizerclusters-class)
       - [4.4.2. Hàm `visualize_real_estate_clusters`](#442-hàm-visualize_real_estate_clusters)
     - [4.5. Tạo bản đồ Heatmap dựa trên giá bất động sản với hàm `visualize_real_estate_price_heatmap`](#45-tạo-bản-đồ-heatmap-dựa-trên-giá-bất-động-sản-với-hàm-visualize_real_estate_price_heatmap)
+      - [4.5.1 `RealEstateVisualizerHeatmap` class](#451-realestatevisualizerheatmap-class)
+      - [4.5.2 Hàm `visualize_real_estate_price_heatmap`](#452-hàm-visualize_real_estate_price_heatmap)
     - [4.6. Chạy chương trình](#46-chạy-chương-trình)
   - [5. Feature Selection với `FeatureSelection.py`](#5-feature-selection-với-featureselectionpy)
     - [5.1. Khai báo thư viện](#51-khai-báo-thư-viện)
@@ -539,7 +548,161 @@ Trong phần này, chúng tôi vẫn cố gắng khai thác tối đa thông tin
 
 # II. EDA và Feature Engineering
 
-## 3 Xử lý và làm sạch dữ liệu với `DataProcessing.py`
+## 1. Khai báo thư viện và thiết lập
+
+Phần này tập trung vào việc khai báo các thư viện và thiết lập môi trường để thực hiện phân tích dữ liệu. Các thư viện bao gồm cả các công cụ xử lý dữ liệu, trực quan hóa, và các tiện ích chuyên biệt. Các thư viện được sử dụng nhằm mục đích tối ưu hóa quy trình xử lý và phân tích dữ liệu.
+
+```python
+import webbrowser
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split, RandomizedSearchCV, GridSearchCV, cross_val_score
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.feature_selection import (
+    VarianceThreshold, SelectKBest, f_regression, mutual_info_regression
+)
+
+# Custom imports from local modules
+from DataProcessing import DataCleaner, del_col
+from Visualize import (
+    check_coordinates_in_vietnam, 
+    visualize_real_estate_price, 
+    visualize_real_estate_clusters,
+    visualize_real_estate_price_heatmap
+)
+```
+
+- **Thư viện cơ bản và tổng quát**
+    - **`webbrowser`**: Tương tác với trình duyệt web để mở báo cáo hoặc bản đồ.
+    - **`numpy`**: Thư viện cơ bản cho tính toán số học, đặc biệt xử lý mảng và các phép toán toán học.
+    - **`pandas`**: Xử lý và phân tích dữ liệu dạng bảng.
+
+- **Thư viện trực quan hóa**
+    - **`matplotlib.pyplot`**: Công cụ tạo biểu đồ từ mức độ cơ bản.
+    - **`seaborn`**: Tăng cường `matplotlib` với giao diện trực quan hơn cho biểu đồ thống kê.
+
+- **Thư viện học máy**
+    - **`sklearn.model_selection`**:
+        - `train_test_split`: Chia dữ liệu thành tập huấn luyện và kiểm tra.
+        - `RandomizedSearchCV` & `GridSearchCV`: Tìm kiếm tham số tối ưu bằng cách thử ngẫu nhiên hoặc toàn diện.
+        - `cross_val_score`: Đánh giá hiệu suất mô hình qua cross-validation.
+
+    - **`sklearn.ensemble`**:
+        - `RandomForestRegressor`: Mô hình hồi quy dạng tập hợp mạnh mẽ và linh hoạt.
+
+    - **`sklearn.feature_selection`**:
+        - `VarianceThreshold`: Loại bỏ các đặc trưng có độ biến thiên thấp.
+        - `SelectKBest`: Chọn K đặc trưng tốt nhất dựa trên kiểm định thống kê như `f_regression` hoặc `mutual_info_regression`.
+
+- **Các mô-đun tuỳ chỉnh**:
+    - **Mô-đun `DataProcessing`**
+        - **`DataCleaner`**: Công cụ làm sạch và tiền xử lý dữ liệu.
+        - **`del_col`**: Hàm xóa các cột không cần thiết hoặc không liên quan.
+
+    - **Mô-đun `Visualize`**
+        - **`check_coordinates_in_vietnam`**: Kiểm tra tọa độ có nằm trong lãnh thổ Việt Nam hay không.
+        - **`visualize_real_estate_price`**: Trực quan hóa giá dựa trên giá cả.
+        - **`visualize_real_estate_clusters`**: Hiển thị các cụm dựa trên vị trí hoặc giá.
+        - **`visualize_real_estate_price_heatmap`**: Tạo biểu đồ nhiệt cho giá cả, có thể biểu diễn trên bản đồ.
+
+## 2. Rút ra thông tin từ dữ liệu
+
+### 2.1. Tổng quan về dữ liệu
+
+| id     | price | area | bedrooms | wc   | n_floors | car_place | house_orientation | furniture       | facade | legal          | street           | district   | type        | date       |
+|--------|-------|------|----------|------|----------|-----------|-------------------|-----------------|--------|----------------|------------------|------------|-------------|------------|
+| 121356 | 0.79  | 57   | 2.0      | 2.0  | NaN      | False     | NaN               | cơ bản          | False  | sổ đỏ/sổ hồng | tân kiên         | bình chánh | tin thường | 11/10/2024 |
+| 121355 | 0.10  | 80   | 19.0     | NaN  | NaN      | False     | NaN               | nội thất đầy đủ | True   | NaN            | lê hồng phong    | quận 10    | tin thường | 11/10/2024 |
+| 115827 | 2.60  | 16   | 4.0      | 3.0  | 3.0      | False     | NaN               | NaN             | False  | sổ đỏ/sổ hồng | lý thường kiệt   | quận 10    | tin thường | 22/07/2024 |
+| 115833 | 3.00  | 32   | 4.0      | NaN  | 5.0      | True      | NaN               | NaN             | False  | sổ đỏ/sổ hồng | NaN              | quận 6     | tin thường | 22/07/2024 |
+| 115834 | 4.60  | 38   | 4.0      | 4.0  | 3.0      | True      | NaN               | NaN             | False  | sổ đỏ/sổ hồng | tân hóa          | quận 6     | tin thường | 22/07/2024 |
+
+
+- Số lượng quan sát (records): 9,882.
+- Số lượng cột: 14.
+- Dữ liệu thiếu: Nhiều cột có dữ liệu thiếu, đặc biệt là bedrooms, wc, n_floors, house_orientation, furniture, và legal.
+
+### 2.2. Phân tích phân phối các biến định lượng
+
+![Histogram and Boxplot](./images/histbox.png)
+
+Dựa trên các biểu đồ histogram và boxplot:
+
+- `price`:
+    - Giá trung bình: 6.53 triệu.
+    - Giá dao động từ 0 đến 40 triệu.
+    - Có sự hiện diện của giá trị ngoại lai với giá rất cao.
+    - Phân phối lệch phải, tức là phần lớn giá trị thấp.
+
+- `area`:
+    - Diện tích trung bình: 76.43 m².
+    - Phần lớn diện tích tập trung dưới 100 m², nhưng có vài ngoại lệ rất lớn (> 400 m²).
+
+- `bedrooms`:
+    - Trung bình: 3.41 phòng ngủ.
+    - Ngoại lai rõ ràng khi số phòng vượt 20.
+
+- `wc` và `n_floors`:
+    - Các cột này cũng có các ngoại lai tương tự, ví dụ: số tầng lên đến 900.
+
+### 2.3. Tình trạng dữ liệu thiếu:
+
+| Column              | Missing Values |
+|---------------------|----------------|
+| id                  | 0              |
+| price               | 482            |
+| area                | 0              |
+| bedrooms            | 1890           |
+| wc                  | 2494           |
+| n_floors            | 3222           |
+| car_place           | 0              |
+| house_orientation   | 8609           |
+| furniture           | 9846           |
+| facade              | 0              |
+| legal               | 8207           |
+| street              | 3970           |
+| district            | 0              |
+| type                | 0              |
+| date                | 0              |
+
+**dtype:** int64
+
+
+Các cột quan trọng bị thiếu dữ liệu nhiều:
+- `bedrooms`: 1,890 thiếu (19%).
+- `wc`: 2,494 thiếu (25%).
+- `n_floors`: 3,222 thiếu (32%).
+- `house_orientation` và `furniture`: hơn 80% thiếu.
+
+### 2.4. Phân tích theo thời gian
+
+![Average Price](./images/averageprice.png)
+
+- Phân phối số lượng theo năm:
+    - Số lượng listings cao nhất là năm 2023.
+    - Năm 2024 số lượng giảm đáng kể, cho thấy cần kiểm tra nguyên nhân.
+
+- Biến động giá trung bình theo mùa:
+    - Mùa thu và mùa xuân có thể là thời điểm "cao điểm" hoặc thuận lợi cho việc mua nhà.
+    - Mùa hè có giá trung bình thấp nhất, có thể là cơ hội tốt để mua nhà hoặc đầu tư
+
+- Biến động giá trung bình theo tháng:
+    - Giá cao nhất vào tháng 3 (mùa xuân) và thấp nhất vào tháng 6.
+    - Giá mùa thu cao hơn các mùa khác.
+
+- Phân phối giá theo ngày trong tuần:
+    - Giá trung bình ổn định nhưng cao hơn vào cuối tuần (chủ nhật).
+
+### 2.5. Các phát hiện chính
+
+- Giá cả bị ảnh hưởng bởi thời gian đăng, đặc biệt theo mùa và ngày.
+- Nhiều cột có dữ liệu ngoại lai hoặc phân phối không đồng đều, cần kiểm soát trước khi dùng để xây dựng mô hình.
+- Dữ liệu thiếu xuất hiện nhiều ở các cột quan trọng.
+
+## 3. Xử lý và làm sạch dữ liệu với `DataProcessing.py`
 
 Ở phần này, tôi sẽ sử dụng file `DataProcessing.py` có chứa `DataCleaner` class để xử lý và làm sạch dữ liệu.
 
@@ -1695,6 +1858,134 @@ Hàm `visualize_real_estate_clusters` đóng gói quy trình tạo bản đồ p
 
 ### 4.5. Tạo bản đồ Heatmap dựa trên giá bất động sản với hàm `visualize_real_estate_price_heatmap`
 
+#### 4.5.1. `RealEstateVisualizerHeatmap` class
+
+Mục đích chính của class này là tạo một bản đồ nhiệt từ dữ liệu bất động sản, trong đó cường độ màu thể hiện mức giá bất động sản trong khu vực.
+
+1. **Thuộc tính của class và khởi tạo `__init__`:**
+
+- `housing (pd.DataFrame)`: DataFrame chứa dữ liệu bất động sản. DataFrame này phải bao gồm ít nhất các cột:
+    - `latitude`: Vĩ độ.
+    - `longitude`: Kinh độ.
+    - `price`: Giá bất động sản.
+
+```python
+def __init__(self, housing_df: pd.DataFrame) -> None:
+        self.housing = housing_df
+```
+
+2. **Phương thức `add_heatmap`**
+
+```python
+def add_heatmap(self, gmap: folium.Map) -> None:
+        heat_data = [
+            [row['latitude'], row['longitude'], row['price']] for _, row in self.housing.iterrows()
+        ]
+        HeatMap(
+            heat_data, 
+            min_opacity=0.5,  
+            max_val=self.housing['price'].max(),
+            radius=20,  
+            blur=10,
+        ).add_to(gmap)
+```
+
+- Chuẩn bị danh sách `heat_data` gồm [`latitude`, `longitude`, `price`] cho từng dòng trong DataFrame.
+- Tạo một `Heatmap` trên bản đồ folium:
+    - `heat_data`: Danh sách gồm [`latitude`, `longitude`, `price`].
+    - `min_opacity`: Đặt độ mờ tối thiểu cho vùng nhiệt.
+    - `max_val`: Giá trị lớn nhất của `price`, được dùng để chuẩn hóa màu sắc theo giá.
+    - `radius`: Bán kính vùng nhiệt cho mỗi điểm dữ liệu.
+    - `blur`: Mức độ làm mờ của các điểm nhiệt.
+
+3. **Phương thức `create_map`**
+
+```python
+def create_map(self) -> folium.Map:
+        gmap = folium.Map(location=[21.028511, 105.804817], zoom_start=6)
+        self.add_heatmap(gmap)
+        return gmap
+```
+
+- Khởi tạo một bản đồ `folium.Map` với tâm là `[21.028511, 105.804817]` (gần Hà Nội) và mức zoom ban đầu là 6 (toàn cảnh Việt Nam).
+- Gọi `add_heatmap(gmap)` để thêm lớp nhiệt lên bản đồ.
+- Trả về đối tượng bản đồ.
+
+**Ý nghĩa thực tiễn:**
+
+Lớp `RealEstateVisualizerHeatmap` hỗ trợ trực quan hóa dữ liệu bất động sản dưới dạng bản đồ nhiệt, giúp xác định khu vực có giá trị cao/thấp, hiểu rõ hơn sự phân bố giá theo khu vực và cung cấp thông tin hữu ích cho các nhà đầu tư, quy hoạch, và nhà phát triển dự án.
+
+```python
+class RealEstateVisualizerHeatmap:
+    """
+    A class to visualize real estate data on a heatmap based on price.
+    
+    Attributes:
+        housing (pd.DataFrame): The DataFrame containing the real estate data.
+
+    Methods:
+        add_heatmap: Add heatmap for the real estate data.
+        create_map: Create a folium map with real estate data.
+    """
+    def __init__(self, housing_df: pd.DataFrame) -> None:
+        """
+        Initialize the RealEstateVisualizerHeatmap object.
+
+        Parameters:
+            housing_df (pd.DataFrame): The DataFrame containing the real estate data.
+        """
+        self.housing = housing_df
+
+    def add_heatmap(self, gmap: folium.Map) -> None:
+        """
+        Add a heatmap layer for the real estate data.
+
+        Parameters:
+            gmap (folium.Map): The folium map object.
+        """
+        # Prepare the data for the heatmap (latitude, longitude, price)
+        heat_data = [
+            [row['latitude'], row['longitude'], row['price']] for _, row in self.housing.iterrows()
+        ]
+        HeatMap(
+            heat_data, 
+            min_opacity=0.5,  
+            max_val=self.housing['price'].max(),
+            radius=20,  
+            blur=10,
+        ).add_to(gmap)
+
+    def create_map(self) -> folium.Map:
+        """
+        Create a folium map with real estate data.
+
+        Returns:
+            folium.Map: The generated folium map with heatmap.
+        """
+        gmap = folium.Map(location=[21.028511, 105.804817], zoom_start=6)
+        self.add_heatmap(gmap)
+        return gmap
+```
+
+#### 4.5.2. Hàm `visualize_real_estate_price_heatmap`
+
+```python
+def visualize_real_estate_price_heatmap(housing_df: pd.DataFrame) -> folium.Map:
+    """
+    Visualize real estate data on a heatmap based on price.
+
+    Parameters:
+        housing_df (pd.DataFrame): The DataFrame containing the real estate data.
+
+    Returns:
+        folium.Map: The generated folium map with heatmap.
+    """
+    visualizer = RealEstateVisualizerHeatmap(housing_df)
+    return visualizer.create_map()
+```
+
+Hàm `visualize_real_estate_price_heatmap` đóng gói quy trình tạo bản đồ nhiệt thành một hàm duy nhất, dễ sử dụng, cho phép người dùng chỉ cần truyền vào DataFrame chứa dữ liệu bất động sản và nhận về một đối tượng bản đồ folium với Heatmap.
+
 ### 4.6. Chạy chương trình
 
 ```python
@@ -1724,7 +2015,7 @@ from Visualize import check_coordinates_in_vietnam,
     \
     ![Price Viz](./images/price_viz.png)
 
-    _Hình 4: Bản đồ phân phối giá bất động sản trên lãnh thổ Việt Nam_
+    _Hình 4: Bản đồ phân phối giá bất động sản trên lãnh thổ thành phố Hồ Chí Minh_
     \
     **Nhận xét:**
 
@@ -1752,7 +2043,7 @@ from Visualize import check_coordinates_in_vietnam,
 
     ![Cluster Viz](./images/cluster_viz.png)
 
-    _Hình 5: Bản đồ phân cụm bất động sản trên lãnh thổ Việt Nam_
+    _Hình 5: Bản đồ phân cụm bất động sản trên lãnh thổ thành phố Hồ Chí Minh_
     \
     **Nhận xét:** 
 
@@ -1784,7 +2075,32 @@ from Visualize import check_coordinates_in_vietnam,
 
     [5833 rows × 12 columns]
 
-4.
+4. Tiếp theo, chúng ta sẽ tạo bản đồ nhiệt bất động sản:
+
+    ```python
+    gmap_3 = visualize_real_estate_price_heatmap(housing_cleaned_coordinations)
+    gmap_3.save("foliumVisualizationHeatmap.html")
+    webbrowser.open_new_tab('foliumVisualizationHeatmap.html')
+    ```
+
+    Trong phần này, `gmap_3` là bản đồ phân phối giá bất động sản  dưới dạng **Heatmap**, được lưu vào file `foliumVisualizationHeatmap.html` và mở trên trình duyệt `webbrowser`.
+
+    ![Heatmap Viz](./images/heatmap_viz.png)
+
+    _Hình 6: Bản đồ nhiệt bất động sản trên lãnh thổ thành phố Hồ Chí Minh_
+    \
+    **Nhận xét:**
+    1. **Đặc điểm không gian của giá trị:**
+        - Sự phân bố màu sắc trên bản đồ cho thấy sự khác biệt rõ rệt về mật độ hoặc giá trị giữa các khu vực. Những khu vực trung tâm với màu đỏ nổi bật biểu thị hoạt động sôi động hoặc giá trị cao (như giá bất động sản hoặc khối lượng giao dịch). Trong khi đó, các vùng ngoại ô có màu xanh dương thể hiện mật độ thấp hơn hoặc ít sôi động hơn.
+        - Sự phân hóa này cho thấy tầm quan trọng của các khu vực trung tâm như một trung tâm kinh tế và hoạt động đô thị.
+
+    2. **Quan sát về cụm và mật độ:**
+        - **Cụm trung tâm:** Các vùng màu đỏ ở khu vực trung tâm Thành phố Hồ Chí Minh (như Quận 1, Quận 3 hoặc khu vực sân bay) đại diện cho các điểm nóng, nơi có mật độ kinh tế hoặc giao dịch bất động sản cao.
+        - **Cụm ngoại vi:** Các vùng màu xanh lá và xanh dương ở rìa bản đồ (ví dụ: Bình Chánh, Hóc Môn) cho thấy mật độ thấp hơn, có thể là các khu vực đang phát triển hoặc khu dân cư với giá trị thị trường thấp hơn.
+    
+    3. **Ý nghĩa thị trường:**
+        - Hình ảnh bản đồ nhiệt là công cụ hiệu quả để nhận diện các khu vực có giá trị cao và tìm cơ hội đầu tư hoặc phát triển. Đồng thời, nó cũng giúp xác định các vùng có tiềm năng phát triển trong tương lai, đặc biệt là dọc theo các dự án giao thông hoặc hạ tầng mới.
+        - Các cụm trung tâm phản ánh những khu vực có sức hút đầu tư cao, trong khi những vùng ít mật độ hơn có thể phù hợp để phát triển thêm.
 
 ## 5. Feature Selection với `FeatureSelection.py`
 
@@ -1989,6 +2305,32 @@ Cài đặt chương trình:
 
 ### 5.4. Phương pháp Select K Best
 
+**Select K Best** là một kỹ thuật lựa chọn đặc trưng (feature selection) phổ biến trong học máy, giúp chọn ra các đặc trưng quan trọng nhất trong tập dữ liệu dựa trên một hàm thống kê hoặc tiêu chí nhất định. Cách tiếp cận này giúp cải thiện hiệu suất của mô hình, giảm độ phức tạp và ngăn chặn overfitting.
+
+Cách hoạt động:
+
+1. **Chọn tiêu chí đánh giá**: **Select K Best** sử dụng một hàm đánh giá thống kê để tính điểm cho từng đặc trưng so với nhãn mục tiêu. Bài toán này đang dùng hàm:
+    - `mutual_info_regression`: Dùng cho bài toán hồi quy, dựa trên lý thuyết thông tin, đánh giá mối quan hệ phi tuyến giữa đặc trưng và nhãn.
+
+2. **Tính điểm cho mỗi đặc trưng**: Hàm đánh giá sẽ gán một điểm số cho từng đặc trưng trong tập dữ liệu.
+
+3. **Chọn ra `k` đặc trưng tốt nhấ**t: Dựa trên điểm số, **Select K Best** sẽ giữ lại `k` đặc trưng có điểm cao nhất.
+
+Cài đặt chương trình:
+
+```python
+def select_k_best(self) -> Set[str]:
+        """
+        Apply SelectKBest with Mutual Information to select the top k features.
+        
+        :return: A set of selected feature names.
+        """
+        selector = SelectKBest(mutual_info_regression, k=self.k_best).fit(self.X, self.y)
+        selected_features = set(self.X.columns[selector.get_support()])
+        self.features_selected.append(selected_features)
+        return selected_features
+```
+
 ### 5.5. Phương pháp Mutual Information
 
 **Mutual Information (MI)** là một phương pháp đo lường mức độ phụ thuộc giữa hai biến ngẫu nhiên. Trong Feature Selection, Mutual Information được sử dụng để đánh giá mức độ tương quan giữa một đặc trưng và biến mục tiêu. Phương pháp này không chỉ phát hiện mối quan hệ tuyến tính mà còn đo lường các mối quan hệ phi tuyến phức tạp.
@@ -2046,10 +2388,300 @@ Cài đặt chương trình:
 
 ### 5.6. Phương pháp GridSearchCV
 
+**GridSearchCV** là một công cụ mạnh mẽ trong thư viện Scikit-learn để tìm kiếm tổ hợp siêu tham số (hyperparameter) tốt nhất cho một mô hình học máy. Phương pháp này sử dụng **tìm kiếm lưới (grid search)** kết hợp với **cross-validation (CV)** để đảm bảo hiệu suất của mô hình được tối ưu hóa trên dữ liệu chưa thấy trước.
+
+Cách hoạt động:
+
+1. **Định nghĩa tập siêu tham số (hyperparameter grid):**
+    - Cần xác định các siêu tham số cần tối ưu và giá trị mà mỗi tham số có thể nhận. 
+    - Ví dụ: số lượng cây trong rừng ngẫu nhiên (`n_estimators`), độ sâu của cây (`max_depth`), v.v.
+
+2. **Tìm kiếm tổ hợp tham số:**
+    - **GridSearchCV** thử tất cả các tổ hợp có thể của các giá trị trong lưới tham số.
+
+3. **Cross-validation:**
+    - Với mỗi tổ hợp tham số, **GridSearchCV** sử dụng kỹ thuật **cross-validation** (thường là k-fold) để đánh giá hiệu suất. Điều này giúp giảm nguy cơ overfitting và đảm bảo kết quả tổng quát.
+
+4. **Lựa chọn mô hình tốt nhất:**
+    - Tổ hợp tham số có hiệu suất tốt nhất trên tập cross-validation sẽ được chọn làm mô hình tối ưu.
+
+Cài đặt chương trình:
+
+```python
+    def grid_search_feature_selection(self) -> Set[str]:
+        """
+        Use GridSearchCV to optimize hyperparameters of a RandomForestRegressor, and select features based on feature importance.
+        
+        :return: A set of selected feature names.
+        """
+        param_grid = {
+            'n_estimators': [50, 100, 200],
+            'max_depth': [None, 10, 20],
+            'min_samples_split': [2, 5, 10],
+            'min_samples_leaf': [1, 2, 4]
+        }
+
+        rf = RandomForestRegressor(random_state=42)
+
+        grid_search = GridSearchCV(estimator=rf, param_grid=param_grid, cv=5, scoring='neg_mean_squared_error', verbose=2, n_jobs=-1)
+        grid_search.fit(self.X, self.y)
+
+        best_model_grid = grid_search.best_estimator_
+
+        pipe = make_pipeline(StandardScaler(), SelectFromModel(estimator=best_model_grid), LinearRegression())
+        pipe.fit(self.X, self.y)
+        selected_features = set(self.X.columns[pipe.named_steps['selectfrommodel'].get_support()])
+        self.features_selected.append(selected_features)
+        return selected_features
+```
+
 ### 5.7. Phương pháp RandomizedSearchCV
+
+**RandomizedSearchCV** là một kỹ thuật tối ưu hóa siêu tham số (hyperparameter optimization) được sử dụng trong học máy. Khác với **GridSearchCV**, **RandomizedSearchCV** không thử tất cả các tổ hợp tham số có thể, mà chọn ngẫu nhiên một số tổ hợp nhất định từ tập tham số đã chỉ định. Điều này giúp giảm thời gian tính toán trong khi vẫn có khả năng tìm ra tổ hợp tham số tốt nhất.
+
+Cách hoạt động:
+
+1. **Định nghĩa tập tham số:**
+    - Thay vì sử dụng một danh sách cố định các giá trị tham số (như trong **GridSearchCV**), ta sẽ định nghĩa phạm vi giá trị hoặc phân phối của các tham số.
+
+2. **Lựa chọn ngẫu nhiên:**
+    - **RandomizedSearchCV** lấy một số tổ hợp ngẫu nhiên (theo phân phối chỉ định hoặc từ phạm vi giá trị) để thử nghiệm.
+    - Số tổ hợp cần thử được xác định bởi tham số `n_iter`.
+
+3. **Cross-validation:**
+    - Giống **GridSearchCV**, **RandomizedSearchCV** sử dụng **cross-validation (CV)** để đánh giá hiệu suất cho từng tổ hợp tham số.
+
+4. **Lựa chọn mô hình tốt nhất:**
+    - Sau khi thử một số tổ hợp, tổ hợp tham số có hiệu suất tốt nhất (theo tiêu chí đánh giá) sẽ được chọn.
+
+Cài đặt chương trình:
+
+```python
+def randomized_search_feature_selection(self) -> Set[str]:
+        """
+        Use RandomizedSearchCV to optimize hyperparameters of a RandomForestRegressor, and select features based on feature importance.
+        
+        :return: A set of selected feature names.
+        """
+        param_dist = {
+            'n_estimators': np.arange(50, 201, 50),
+            'max_depth': [None, 10, 20, 30],
+            'min_samples_split': np.arange(2, 11),
+            'min_samples_leaf': np.arange(1, 5)
+        }
+
+        rf = RandomForestRegressor(random_state=42)
+
+        random_search = RandomizedSearchCV(estimator=rf, param_distributions=param_dist, n_iter=20, cv=5, scoring='neg_mean_squared_error', random_state=42, n_jobs=-1)
+        random_search.fit(self.X, self.y)
+
+        best_model_random = random_search.best_estimator_
+
+        pipe = make_pipeline(StandardScaler(), SelectFromModel(estimator=best_model_random), LinearRegression())
+        pipe.fit(self.X, self.y)
+        selected_features = set(self.X.columns[pipe.named_steps['selectfrommodel'].get_support()])
+        self.features_selected.append(selected_features)
+        return selected_features
+```
 
 ### 5.8. Chạy chương trình
 
 ## 6. Tách tập dữ liệu
 
 ## 7. Xây dựng pipeline với `HousingPipeline.py`
+
+`HousingPipeline` xây dựng một quy trình có cấu trúc rõ ràng các bước từ đầu đến cuối, chỉ cần truyền dataframe vào thì `HousingPipeline` sẽ xử lý tất cả các bước:
+
+- Xử lý và làm sạch dữ liệu.
+- Trực quan hoá dữ liệu và Feature Engineering.
+- Feature Selection.
+- Tách tập dữ liệu thành **Train set** và **Test set**.
+
+Cuối cùng, chúng ta sẽ nhận được 2 tập **Train set** và **Test set** để chuẩn bị cho bước huấn luyện mô hình.
+
+Ngoài ra, `HousingPipeline` có thể tái sử dụng cho việc chuẩn bị dữ liệu, giúp tự động hoá quy trình:
+
+- Giảm thiểu các bước thủ công khi xử lý dữ liệu.
+- Tạo ra các bước liên tục để phân tích và xử lý dữ liệu từ thô đến sạch.
+
+**Lợi ích của `HousingPipeline`:**
+
+- Tính hiệu quả: Giảm thời gian và lỗi khi xử lý dữ liệu thủ công.
+- Tính tái sử dụng: Pipeline được dùng lại dễ dàng, đặc biệt với các tập dữ liệu lớn hoặc dự án phức tạp.
+- Tính đồng nhất: Đảm bảo tất cả dữ liệu được xử lý theo cùng một cách.
+
+Cài đặt `HousingPipeline`
+
+```python
+import pandas as pd
+import folium
+from typing import List
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from DataProcessing import DataCleaner, del_col
+from Visualize import check_coordinates_in_vietnam, RealEstateVisualizerCluster
+from FeatureSelection import FeatureSelector
+
+def process_data(api_key: str, df: pd.DataFrame, target_col: str, drop_na_cols: list, input_cols: list, cols_to_impute: list, unnecessary_columns: list) -> pd.DataFrame:
+    """
+    Function to process data using DataCleaner and del_col from the DataProcessing module.
+
+    Parameters:
+    - api_key (str): API key used to create an instance of DataCleaner.
+    - df (pd.DataFrame): The DataFrame containing the data to be processed.
+    - target_col (str): The name of the target column for outlier processing.
+    - drop_na_cols (list): A list of columns to remove rows with NA values. 
+    - input_cols (list): A list of columns to be used for imputing missing values.
+    - cols_to_impute (list): A list of columns to impute missing values.
+
+    Returns:
+    - pd.DataFrame: The cleaned and processed DataFrame.
+    """
+    # Create an instance of DataCleaner
+    data_cleaner = DataCleaner(api_key)
+
+    # Clean the data: handle outliers, drop rows with NA, and impute missing values
+    cleaned_df = data_cleaner.clean_data(
+        df=df,
+        target_col=target_col,
+        drop_na_cols=drop_na_cols,
+        input_cols=input_cols,
+        cols_to_impute=cols_to_impute
+    )
+
+    # Remove unnecessary columns
+    processed_df = del_col(cleaned_df, unnecessary_columns)
+
+    # Return the cleaned DataFrame
+    return processed_df
+
+def process_and_visualize_real_estate(shapefile_path: str, housing_df: pd.DataFrame, num_clusters: int = 5) -> tuple[folium.Map, pd.DataFrame]:
+    """
+    Process and visualize real estate data.
+
+    Parameters:
+        shapefile_path (str): Path to the shapefile containing Vietnam's territorial boundaries.
+        housing_df (pd.DataFrame): Real estate data in the form of a DataFrame.
+        num_clusters (int): Number of clusters for data grouping, default is 5.
+
+    Returns:
+        folium.Map: A folium map with visualized clusters.
+    """
+    # Check coordinates within Vietnam's boundaries
+    valid_housing_df = check_coordinates_in_vietnam(shapefile_path, housing_df)
+
+    # Initialize RealEstateVisualizerCluster
+    visualizer = RealEstateVisualizerCluster(housing_df=valid_housing_df, num_clusters=num_clusters)
+
+    # Perform clustering and prepare data for visualization
+    visualizer.fit_kmeans()
+
+    # Create and return a folium map with clusters
+    real_estate_map = visualizer.create_map()
+    
+    # Get the processed DataFrame with cluster information
+    processed_df = visualizer.housing
+
+    return real_estate_map, processed_df
+
+def select_important_features(X: pd.DataFrame, y: pd.Series, variance_threshold: float = 0.1, k_best: int = 5, top_k_f_test: int = 7) -> List[str]:
+    """
+    Use FeatureSelector to select important features.
+
+    Parameters:
+        X (pd.DataFrame): Feature matrix.
+        y (pd.Series): Target variable.
+        variance_threshold (float): Threshold for feature selection using the VarianceThreshold method.
+        k_best (int): Number of top features to select using SelectKBest (F-regression).
+        top_k_f_test (int): Number of top features to select based on F-test and Mutual Information.
+
+    Returns:
+        List[str]: List of important selected features.
+    """
+    # Create an instance of FeatureSelector
+    feature_selector = FeatureSelector(X, y, variance_threshold, k_best, top_k_f_test)
+    
+    # Run the feature selection process
+    selected_features = feature_selector.fit()
+    
+    return selected_features
+
+def split_data(X: pd.DataFrame, target_column: pd.Series) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """
+    Split the data into training and test sets.
+
+    Parameters:
+        X (pandas.DataFrame): The input DataFrame.
+        target_column (str): The target column to split the data.
+
+    Returns:
+        tuple[pandas.DataFrame, pd.DataFrame, pd.DataFrame]: 
+        - The full DataFrame after processing.
+        - The training set.
+        - The test set.
+    """
+    # Calculate correlations and find the highest correlated column to the target
+    corr = X.corr()
+    target_corr = corr[target_column].sort_values(ascending=False)
+    highest_corr_column = target_corr.index[1]  # The second most correlated column (excluding the target itself)
+
+    # Create a new column with quantile-based categories
+    X[f'{highest_corr_column} Category'] = pd.qcut(
+        X[highest_corr_column], q=5, labels=False, duplicates='drop'
+    )
+
+    # Split the data using stratification on the new category column
+    X_train, X_test = train_test_split(
+        X, test_size=0.2, stratify=X[f'{highest_corr_column} Category'], random_state=42
+    )
+
+    # Remove the temporary category column from all sets
+    for subset in (X_train, X_test):
+        subset.drop([f'{highest_corr_column} Category'], axis=1, inplace=True)
+
+    X.drop([f'{highest_corr_column} Category'], axis=1, inplace=True)
+    return X, X_train, X_test
+
+
+if __name__ == '__main__':
+    # Read dataset
+    housing = pd.read_csv('datasets/housing.csv', sep = '\t')
+
+    api_key = "ccc01759bd474d50b77b337c740ed0b7" # api_key to get 'latitude' and 'longitude'
+    shapefile_path = 'vietnam_Vietnam_Country_Boundary/extracted_files/vietnam_Vietnam_Country_Boundary.shp' # Path to the shapefile containing the boundary of Vietnam
+    
+    # Processing data
+    processed_df = process_data(
+        api_key=api_key,
+        df=housing,
+        target_col='price', 
+        drop_na_cols=['price', 'area'], 
+        input_cols=['price', 'area', 'car_place', 'facade'], 
+        cols_to_impute=['bedrooms', 'wc', 'n_floors'],
+        unnecessary_columns=['facade']
+    )
+
+    # Process and visualize real estate
+    cluster_map, processed_df = process_and_visualize_real_estate(
+        shapefile_path=shapefile_path,
+        housing_df=processed_df,
+        num_clusters=5
+    )
+
+    # Display the cluster map
+    cluster_map.save("foliumVisualizationCluster.html")
+
+    # Select important features based on 'price'
+    features = processed_df.drop(columns='price')
+    target = processed_df['price']
+    selected_features = select_important_features(features, target)
+    X_filtered = processed_df[selected_features]
+
+    # Combine the standardized features with the target column 'price'
+    X_final_with_price = pd.concat([X_filtered, target], axis=1)
+
+    # Split the data into train set, test set and save to CSV files
+    df_processed, df_train, df_test = split_data(X_final_with_price, target_column='price')
+    df_train.to_csv('datasets/housing_train.csv', index=False)
+    df_test.to_csv('datasets/housing_test.csv', index=False)
+```
