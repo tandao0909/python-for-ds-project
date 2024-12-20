@@ -2,12 +2,13 @@ import os
 import time
 from typing import Any
 
-from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
-from sklearn.linear_model._base import LinearModel
-from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 import pandas as pd
+
+from sklearn.model_selection import GridSearchCV
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
+from sklearn.linear_model._base import LinearModel
+from sklearn.metrics import root_mean_squared_error, r2_score
 
 from constants import TRAIN_PATH, TARGET_COLUMN, BENCHMARK_DIRPATH
 
@@ -36,7 +37,7 @@ def benchmark_linear_model(
     model_name: str,
     note: str = "",
 ) -> None:
-    rmse = mean_squared_error(y_true, y_pred)
+    rmse = root_mean_squared_error(y_true, y_pred)
     r2 = r2_score(y_true, y_pred)
 
     n = len(y_true)
