@@ -20,4 +20,4 @@ if __name__ == "__main__":
     data = pd.read_csv(TRAIN_PATH)
     X = data.drop(TARGET_COLUMN, axis=1)
     y = data[TARGET_COLUMN]
-    train_models(X, y)
+    train_models(X, y, fine_tune=True)

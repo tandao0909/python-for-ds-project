@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
@@ -99,6 +100,8 @@ def train_ensemble_models(
     X: pd.DataFrame, y: pd.Series, default: bool = True, fine_tune: bool = False
 ):
     if default or fine_tune:
+        Path(BENCHMARK_PATH).parent.mkdir(parents=True, exist_ok=True)
+
         # Clear all content in the benchmark file
         with open(BENCHMARK_PATH, "w") as file:
             pass

@@ -1,3 +1,4 @@
+from pathlib import Path
 import time
 from typing import Any
 
@@ -96,6 +97,7 @@ def benchmark_model(
             "note": [note],
         },
     )
+    Path(benchmark_path).parent.mkdir(parents=True, exist_ok=True)
     try:
         exist_benchmark = pd.read_csv(benchmark_path)
     except pd.errors.EmptyDataError:
