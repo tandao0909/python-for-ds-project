@@ -54,7 +54,7 @@
     - [5.8. Chạy chương trình](#58-chạy-chương-trình)
   - [6. Tách tập dữ liệu](#6-tách-tập-dữ-liệu)
   - [7. Xây dựng pipeline với `HousingPipeline.py`](#7-xây-dựng-pipeline-với-housingpipelinepy)
-
+- [IV. Model training](#iv-model-training)
 # I. Data Crawling and Preprocessing
 
 ## Thu thập dữ liệu
@@ -2685,3 +2685,156 @@ if __name__ == '__main__':
     df_train.to_csv('datasets/housing_train.csv', index=False)
     df_test.to_csv('datasets/housing_test.csv', index=False)
 ```
+# IV. Model Training
+
+Các tham số cố định, như tên cột, địa chỉ file in/out, được đưa vào file `constants.py`:
+
+```python
+import os
+
+DATA_DIRPATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+TRAIN_PATH = os.path.join(DATA_DIRPATH, "housing_train.csv")
+TEST_PATH = os.path.join(DATA_DIRPATH, "housing_test.csv")
+BENCHMARK_DIRPATH = os.path.join(os.path.dirname(__file__), "benchmark")
+
+TARGET_COLUMN = "price"
+```
+
+Cấu trúc của phần train model có thể hiểu đơn giản là 1 struct có interface như sau:
+
+```go
+type ModelTraining interface {
+  data: pd.DataFrame,
+  train_parameters,
+}
+```
+
+Vì vậy nên ta có thể gom chung vào 1 file `utils.py` 2 hàm `train_default_models()` và `fine_tune_models()`:
+
+```python
+from pathlib import Path
+import time
+from typing import Any
+
+import pandas as pd
+import numpy as np
+
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import (
+    root_mean_squared_error,
+    r2_score,
+    mean_absolute_percentage_error,
+    mean_absolute_error,
+    explained_variance_score,
+)
+
+
+def train_default_models(
+    X: pd.DataFrame, y: pd.Series, model_dict: dict[str, Any], benchmark_path: str
+) -> None:
+    for model_name, model in model_dict.items():
+        start_time = time.time()
+        model.fit(X, y)
+        end_time = time.time()
+        benchmark_model(
+            y_true=y,
+            y_pred=model.predict(X),
+            num_features=X.shape[1],
+            train_time=end_time - start_time,
+            model_name=model_name,
+            benchmark_path=benchmark_path,
+            note="Using default parameters",
+        )
+
+
+def fine_tune_models(
+    X: pd.DataFrame,
+    y: pd.Series,
+    finetune_dict: dict[str, dict[str, list[Any]]],
+    model_dict: dict[str, Any],
+    benchmark_path: str,
+):
+    for model_name, param_dict in finetune_dict.items():
+        grid_search = GridSearchCV(model_dict[model_name], param_dict)
+        start_time = time.time()
+        grid_search.fit(X, y)
+        end_time = time.time()
+        best_params = grid_search.best_params_
+        best_model = grid_search.best_estimator_
+        benchmark_model(
+            y_true=y,
+            y_pred=best_model.predict(X),
+            num_features=X.shape[1],
+            train_time=end_time - start_time,
+            model_name=model_name,
+            benchmark_path=benchmark_path,
+            note=f"Fine tune, best params is {best_params}",
+        )
+
+
+def benchmark_model(
+    y_true: pd.Series,
+    y_pred: np.ndarray,
+    num_features: int,
+    train_time: float,
+    model_name: str,
+    benchmark_path: str,
+    note: str = "",
+) -> None:
+    rmse = root_mean_squared_error(y_true, y_pred)
+    r2 = r2_score(y_true, y_pred)
+
+    n = len(y_true)
+    k = num_features + 1  # number of features + intercept
+    rss = np.sum((y_true - y_pred) ** 2)
+
+    aic = n * np.log(rss / n) + 2 * k
+    bic = n * np.log(rss / n) + k * np.log(n)
+    adjusted_r2 = 1 - ((1 - r2) * (n - 1) / (n - k - 1))
+
+    mape = mean_absolute_percentage_error(y_true, y_pred)
+    mae = mean_absolute_error(y_true, y_pred)
+    explained_variance = explained_variance_score(y_true, y_pred)
+
+    benchmark_df = pd.DataFrame(
+        {
+            "rmse": [rmse],
+            "r2": [r2],
+            "aic": [aic],
+            "bic": [bic],
+            "adjusted_r2": [adjusted_r2],
+            "mape": [mape],
+            "mae": [mae],
+            "explained_variance": [explained_variance],
+            "train_time(second)": [train_time],
+            "model_name": [model_name],
+            "note": [note],
+        },
+    )
+    Path(benchmark_path).parent.mkdir(parents=True, exist_ok=True)
+    try:
+        exist_benchmark = pd.read_csv(benchmark_path)
+    except pd.errors.EmptyDataError:
+        exist_benchmark = None
+    benchmark_df = (
+        benchmark_df
+        if exist_benchmark is None
+        else pd.concat([exist_benchmark, benchmark_df], ignore_index=True)
+    )
+    benchmark_df.to_csv(benchmark_path, index=False)
+```
+
+2 hàm trợ giúp này có tác dụng nhận vào các tham số của model family và thực hiện train. Vì việc ta cần thực hiện như nhau, dữ liệu sử dụng cũng như nhau, chỉ khác tham số truyền vào, nên ta có thể tách riêng ra từng family model và viết các tham số cần thiết ở đầu file đó.
+
+Ở đây, chúng em sử dụng 4 model family: Linear, Tree-based, SVM, Ensemble. Mỗi family được đưa vào file riêng. Ở đây, em cố tình viết riêng hàm train cho từng model family, tuy chúng vẫn có cùng interface:
+
+```go
+type TrainingInterface interface {
+  X: pd.DataFrame,
+  y: pd.Series,
+  default: bool = True,
+  fine_tune: bool = True
+}
+```
+
+Điều này là vì tuy interface giống nhau, và có thể sử dụng chung các hàm trợ giúp, bản chất chức năng các hàm này có thể thay đổi, và vì thế chúng ta không nên tạo thêm 1 hàm utility mới, mà nên viết riêng ra từ đầu.
