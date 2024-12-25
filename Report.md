@@ -15,12 +15,12 @@
       - [Tạo ra các cột dữ liệu mới hữu ích cho bài toán](#tạo-ra-các-cột-dữ-liệu-mới-hữu-ích-cho-bài-toán)
 - [II. EDA và Feature Engineering](#ii-eda-và-feature-engineering)
   - [1. Khai báo thư viện và thiết lập](#1-khai-báo-thư-viện-và-thiết-lập)
-  - [2. Rút ra thông tin từ dữ liệu.](#2-rút-ra-thông-tin-từ-dữ-liệu)
-      - [2.1. Tổng quan về dữ liệu](#21-tổng-quan-về-dữ-liệu)
-      - [2.2. Phân tích phân phối các biến định lượng](#22-phân-tích-phân-phối-các-biến-định-lượng)
-      - [2.3. Tình trạng dữ liệu thiếu](#23-tình-trạng-dữ-liệu-thiếu)
-      - [2.4. Phân tích theo thời gian](#24-phân-tích-theo-thời-gian)
-      - [2.5. Các phát hiện chính](#25-các-phát-hiện-chính)
+  - [2. Rút ra thông tin từ dữ liệu](#2-rút-ra-thông-tin-từ-dữ-liệu)
+    - [2.1. Tổng quan về dữ liệu](#21-tổng-quan-về-dữ-liệu)
+    - [2.2. Phân tích phân phối các biến định lượng](#22-phân-tích-phân-phối-các-biến-định-lượng)
+    - [2.3. Tình trạng dữ liệu thiếu:](#23-tình-trạng-dữ-liệu-thiếu)
+    - [2.4. Phân tích theo thời gian](#24-phân-tích-theo-thời-gian)
+    - [2.5. Các phát hiện chính](#25-các-phát-hiện-chính)
   - [3. Xử lý và làm sạch dữ liệu với `DataProcessing.py`](#3-xử-lý-và-làm-sạch-dữ-liệu-với-dataprocessingpy)
     - [3.1. Khai báo thư viện](#31-khai-báo-thư-viện)
     - [3.2. `DataCleaner` class](#32-datacleaner-class)
@@ -40,8 +40,8 @@
       - [4.4.1. `RealEstateVisualizerClusters` class](#441-realestatevisualizerclusters-class)
       - [4.4.2. Hàm `visualize_real_estate_clusters`](#442-hàm-visualize_real_estate_clusters)
     - [4.5. Tạo bản đồ Heatmap dựa trên giá bất động sản với hàm `visualize_real_estate_price_heatmap`](#45-tạo-bản-đồ-heatmap-dựa-trên-giá-bất-động-sản-với-hàm-visualize_real_estate_price_heatmap)
-      - [4.5.1 `RealEstateVisualizerHeatmap` class](#451-realestatevisualizerheatmap-class)
-      - [4.5.2 Hàm `visualize_real_estate_price_heatmap`](#452-hàm-visualize_real_estate_price_heatmap)
+      - [4.5.1. `RealEstateVisualizerHeatmap` class](#451-realestatevisualizerheatmap-class)
+      - [4.5.2. Hàm `visualize_real_estate_price_heatmap`](#452-hàm-visualize_real_estate_price_heatmap)
     - [4.6. Chạy chương trình](#46-chạy-chương-trình)
   - [5. Feature Selection với `FeatureSelection.py`](#5-feature-selection-với-featureselectionpy)
     - [5.1. Khai báo thư viện](#51-khai-báo-thư-viện)
@@ -52,9 +52,14 @@
     - [5.6. Phương pháp GridSearchCV](#56-phương-pháp-gridsearchcv)
     - [5.7. Phương pháp RandomizedSearchCV](#57-phương-pháp-randomizedsearchcv)
     - [5.8. Chạy chương trình](#58-chạy-chương-trình)
+      - [5.8.1. Variance Threshold](#581-variance-threshold)
+      - [5.8.2. Select K Best](#582-select-k-best)
+      - [5.8.3. Mutual Information](#583-mutual-information)
+      - [5.8.4. GridSearchCV](#584-gridsearchcv)
+      - [5.8.5. RandomizedSearchCV](#585-randomizedsearchcv)
   - [6. Tách tập dữ liệu](#6-tách-tập-dữ-liệu)
   - [7. Xây dựng pipeline với `HousingPipeline.py`](#7-xây-dựng-pipeline-với-housingpipelinepy)
-- [IV. Model training](#iv-model-training)
+- [IV. Model Training](#iv-model-training)
 # I. Data Crawling and Preprocessing
 
 ## Thu thập dữ liệu
@@ -2486,7 +2491,268 @@ def randomized_search_feature_selection(self) -> Set[str]:
 
 ### 5.8. Chạy chương trình
 
+Việc chạy chương trình cho phần Feature Selection sẽ được tích hợp và trình bày ở phần [7. Xây dựng pipeline với `HousingPipeline.py`](#7-xây-dựng-pipeline-với-housingpipelinepy) bên dưới. Tại đây, chương trình sẽ chạy toàn bộ quy trình Feature Selection và trả về danh sách các đặc trưng quan trọng nhất cho mô hình thông qua hàm `combine_selected_features`.
+
+Vì vậy, để trực quan hơn cho quy trình Feature Selection, tôi sẽ tách riêng từng hàm và in ra kết quả của từng phương pháp chọn lọc đặc trưng để kiểm tra.
+
+Các thư viện sẽ được khai báo tương tự như ở phần [5.1. Khai báo thư viện](#51-khai-báo-thư-viện).
+
+#### 5.8.1. Variance Threshold
+
+```pythonX, y = housing_cleaned_coordinations.drop('price', axis=1), housing_cleaned_coordinations['price']
+
+# Threshold = 0.1 (removes features with less than 10% variance)
+selector = VarianceThreshold(threshold=0.1)
+X_kvar = selector.fit_transform(X)
+selected_columns = X.columns[selector.get_support()]  # Get columns with variance greater than threshold
+print(selected_columns)
+```
+
+```md
+Index(['id', 'area', 'bedrooms', 'wc', 'n_floors', 'car_place', 'Cluster',
+       'Distance to center 0', 'Distance to center 1'],
+      dtype='object')
+```
+
+Đối với phương pháp **Variance Threshold**, sau khi áp dụng, chúng ta giữ lại 9 đặc trưng quan trọng nhất với ngưỡng phương sai là $0.1$.
+
+#### 5.8.2. Select K Best
+
+```python
+# Use f_regression for regression problems
+X_kbest = SelectKBest(f_regression, k=5).fit_transform(X, y)
+
+print('Selected columns after applying SelectKBest:', X.columns[SelectKBest(f_regression, k=5).fit(X, y).get_support()])
+```
+
+```md
+Selected columns after applying SelectKBest: Index(['bedrooms', 'wc', 'n_floors', 'car_place', 'Distance to center 0'], dtype='object')
+```
+
+Phương pháp **Select K Best** ở trên chọn ra 5 đặc trưng quan trọng nhất dựa trên hàm score `f_regression`. Để chọn ra số lượng đặc trưng tùy ý, chỉ cần thay đổi giá trị của `k`.
+
+#### 5.8.3. Mutual Information
+
+```python
+# Assuming X and y are already defined
+mi = mutual_info_regression(X, y)
+
+# Normalize the scores for comparison
+mi_normalized = mi / mi.max()
+
+# Create a DataFrame to store the scores
+feature_scores = pd.DataFrame({
+    'Feature': X.columns,
+    'Mutual Information': mi_normalized
+})
+
+# Sort features by Mutual Information in descending order
+feature_scores = feature_scores.sort_values(by='Mutual Information', ascending=False)
+
+# Select the top_k features based on Mutual Information
+top_k_mi = 5  # Define the number of top features you want to select
+top_features = set(feature_scores.head(top_k_mi)['Feature'].tolist())
+
+print(top_features)
+```
+
+```md
+{'Distance to center 0', 'latitude', 'wc', 'bedrooms', 'Distance to center 1'}
+```
+
+Phương pháp **Mutual Information** ở trên chọn ra 5 đặc trưng quan trọng nhất. Để chọn ra số lượng đặc trưng tùy ý, chỉ cần thay đổi giá trị của `top_k_mi`.
+
+#### 5.8.4. GridSearchCV
+
+```python
+# Define the parameter grid to search for the best parameters
+param_grid = {
+    'n_estimators': [50, 100, 200],
+    'max_depth': [None, 10, 20],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4]
+}
+
+# Initialize the RandomForest model
+rf = RandomForestRegressor(random_state=42)
+
+# Perform grid search with cross-validation
+grid_search = GridSearchCV(estimator=rf, param_grid=param_grid, cv=5, scoring='neg_mean_squared_error', verbose=2, n_jobs=-1)
+
+# Fit the model
+grid_search.fit(X, y)
+
+# Output the best parameters and score
+print("Best parameters found: ", grid_search.best_params_)
+print("Best score (negative MSE): ", -grid_search.best_score_)
+
+# Use the best estimator
+best_model = grid_search.best_estimator_
+
+# Evaluate using cross-validation on the best model
+mse_best = cross_val_score(best_model, X, y, scoring='neg_mean_squared_error', cv=5).mean()
+print('MSE with best model:', -mse_best)
+```
+
+```md
+Best parameters found:  {'max_depth': None, 'min_samples_leaf': 2, 'min_samples_split': 2, 'n_estimators': 200}
+Best score (negative MSE):  2.8125462355474498
+MSE with best model: 2.8125462355474498
+```
+
+Phương pháp **GridSearchCV** tìm ra mô hình tốt nhất với các siêu tham số tối ưu và MSE tương ứng. Đồng thời, chúng ta cũng chọn ra các đặc trưng quan trọng từ mô hình dựa vào feature importance.
+
+```python
+for col in X.columns:
+    print(f"{col}: {best_model.feature_importances_[X.columns.get_loc(col)]}")
+```
+
+```md
+id: 0.0929387363740693
+area: 0.16166346047574368
+bedrooms: 0.09137136922181854
+wc: 0.36146322967438793
+n_floors: 0.03905496700552482
+car_place: 0.020482281172774886
+latitude: 0.055485304951903375
+longitude: 0.0425910603688488
+Cluster: 0.0009709008765686273
+Distance to center 0: 0.05543350423025281
+Distance to center 1: 0.07854518564810725
+```
+
+Các đặc trưng quan trọng được chọn từ mô hình Random Forest. Ta có thể chọn ra $k$ đặc trưng quan trọng nhất từ mô hình tùy ý dựa vào thứ tự giảm dần của feature importance.
+
+#### 5.8.5. RandomizedSearchCV
+
+```python
+# Define the parameter distribution
+param_dist = {
+    'n_estimators': np.arange(50, 201, 50),
+    'max_depth': [None, 10, 20, 30],
+    'min_samples_split': np.arange(2, 11),
+    'min_samples_leaf': np.arange(1, 5)
+}
+
+# Initialize the RandomForest model
+rf = RandomForestRegressor(random_state=42)
+
+# Use RandomizedSearchCV to search over the parameter space
+random_search = RandomizedSearchCV(estimator=rf, param_distributions=param_dist, 
+                                   n_iter=20, cv=5, scoring='neg_mean_squared_error', random_state=42, n_jobs=-1)
+
+# Fit the model
+random_search.fit(X, y)
+
+# Output the best parameters and score
+print("Best parameters found: ", random_search.best_params_)
+print("Best score (negative MSE): ", -random_search.best_score_)
+
+# Use the best model from random search
+best_model_random = random_search.best_estimator_
+
+# Evaluate the best model using cross-validation
+mse_best_random = cross_val_score(best_model_random, X, y, scoring='neg_mean_squared_error', cv=5).mean()
+print('MSE with best random search model:', -mse_best_random)
+```
+
+```md
+Best parameters found:  {'n_estimators': np.int64(150), 'min_samples_split': np.int64(2), 'min_samples_leaf': np.int64(2), 'max_depth': 30}
+Best score (negative MSE):  2.8203427815496713
+MSE with best random search model: 2.8203427815496713
+```
+
+Phương pháp **RandomizedSearchCV** tìm ra mô hình tốt nhất với các siêu tham số tối ưu và MSE tương ứng. Đồng thời, chúng ta cũng chọn ra các đặc trưng quan trọng từ mô hình dựa vào feature importance.
+
+```python
+print("Feature Importances:")
+for col in X.columns:
+    print(f"{col}: {best_model_random.feature_importances_[X.columns.get_loc(col)]}")
+```
+
+```md
+Feature Importances:
+id: 0.09261421743625706
+area: 0.1618757465102772
+bedrooms: 0.09250090389161265
+wc: 0.3615603667027046
+n_floors: 0.038810754688151865
+car_place: 0.020080871180090477
+latitude: 0.05578972070743495
+longitude: 0.04318122714050373
+Cluster: 0.0008897133300754471
+Distance to center 0: 0.05459280828699985
+Distance to center 1: 0.07810367012589219
+```
+
+Các đặc trưng quan trọng được chọn từ mô hình Random Forest. Ta có thể chọn ra $k$ đặc trưng quan trọng nhất từ mô hình tùy ý dựa vào thứ tự giảm dần của feature importance.
+
 ## 6. Tách tập dữ liệu
+
+Trong phần này, chúng ta sẽ tiến hành xây dựng tập dữ liệu huấn luyện (train set) và kiểm tra (test set) từ bộ dữ liệu đã được xử lý trước đó. Mục đích là tìm ra biến có tương quan cao với giá (price) và phân tích cách biến đó phân bố. Sau đó, chia dữ liệu ra 2 tập train và test theo tỷ lệ phù hợp.
+
+Đầu tiên, chúng ta sẽ xem xét mức độ tương quan giữa giá (price) và các biến khác trong bộ dữ liệu:
+
+```python
+housing_final = pd.read_csv('./datasets/housing_final_features_with_price.csv')
+
+corr_matrix = housing_final.corr(numeric_only=True)
+important_corr = corr_matrix['price'].sort_values(ascending=False)
+plt.figure(figsize=(15, 15))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+```
+
+![Corr Matrix](./images/corr_matrix.png)
+_Hình 1: Biểu đồ ma trận tương quan giữa price và các biến khác_
+
+Biểu đồ ma trận tương quan cho thấy mức độ tương quan giữa giá (price) và các biến khác trong bộ dữ liệu. Biến có tương quan cao nhất với price là wc và bedrooms.
+
+Tiếp theo, chúng ta sẽ xem xét cách phân bố dữ liệu của biến bedrooms với `q=4` để chia thành 4 danh mục:
+
+```python
+important_feature = 'bedrooms'  # Biến quan trọng nhất sau phân tích tương quan
+housing_final["bedrooms_category"] = pd.qcut(housing_final[important_feature], q=4, labels=False)
+
+housing_final["bedrooms_category"].value_counts().sort_index().plot.bar(rot=0, grid=True)
+plt.title("Distribution of bedrooms")
+plt.xlabel("Bedroom Category")
+plt.ylabel("Count")
+plt.show()
+```
+
+![Bedroom Category](./images/bedrooms_category.png)
+
+_Hình 2: Biểu đồ phân bố dữ liệu của biến bedrooms_
+
+Biến "bedrooms" được phân chia thành 4 danh mục dựa trên phân vị tứ tư. Biểu đồ thanh minh hoạ cho tần suất của từng danh mục, đảm bảo việc chia tập huấn luyện và kiểm tra được đồng đều dựa theo biến này. Cùng xem bảng dữ liệu với biến "bedrooms_category" được tích hợp (biến này sẽ được loại bỏ sau khi chia tập dữ liệu):
+
+| Cluster | n_floors | area | id     | car_place | wc     | bedrooms | Distance to center 1 | price  | bedrooms_category |
+|---------|----------|------|--------|-----------|--------|----------|----------------------|--------|-------------------|
+| 0       | 1.0      | 57   | 121356 | 0         | 2.0000 | 2.0000   | 10.874742           | 0.790  | 0                 |
+| 1       | 3.0      | 16   | 115827 | 0         | 3.0000 | 4.0000   | 3.401934            | 2.600  | 2                 |
+| 2       | 5.0      | 32   | 115833 | 1         | 2.0696 | 4.0000   | 5.458846            | 3.000  | 2                 |
+| 3       | 3.0      | 38   | 115834 | 1         | 4.0000 | 3.0000   | 4.487381            | 4.600  | 1                 |
+| 4       | 4.0      | 76   | 115837 | 1         | 4.0000 | 4.0000   | 8.500217            | 3.450  | 2                 |
+| ...     | ...      | ...  | ...    | ...       | ...    | ...      | ...                 | ...    | ...               |
+| 5828    | 4.0      | 46   | 88818  | 1         | 4.0000 | 4.0000   | 2.876457            | 9.500  | 2                 |
+| 5829    | 1.0      | 48   | 86770  | 0         | 2.0000 | 2.0000   | 9.774195            | 1.950  | 0                 |
+| 5830    | 3.0      | 56   | 86258  | 1         | 4.0000 | 3.0000   | 7.209409            | 10.200 | 1                 |
+| 5831    | 5.0      | 47   | 86002  | 1         | 5.0000 | 4.0000   | 6.469803            | 6.200  | 2                 |
+| 5832    | 2.0      | 30   | 108530 | 0         | 1.2645 | 1.6957   | 6.643871            | 0.001  | 0                 |
+
+[5833 rows × 10 columns]
+
+Cuối cùng, chúng ta sẽ chia tập dữ liệu thành tập huấn luyện và tập kiểm tra với tỷ lệ 80-20 với `stratify` theo biến "bedrooms_category", sau đó lưu dưới dạng file CSV vào thư mục `datasets`:
+
+```python
+train_set, test_set = train_test_split(housing_final, test_size=0.2, stratify=housing_final["bedrooms_category"], random_state=42)
+
+for set_ in [train_set, test_set]:
+    set_.drop(["bedrooms_category"], axis=1, inplace=True)
+
+train_set.to_csv('datasets/housing_train.csv', index=False)
+test_set.to_csv('datasets/housing_test.csv', index=False)
+```
 
 ## 7. Xây dựng pipeline với `HousingPipeline.py`
 
@@ -2685,6 +2951,7 @@ if __name__ == '__main__':
     df_train.to_csv('datasets/housing_train.csv', index=False)
     df_test.to_csv('datasets/housing_test.csv', index=False)
 ```
+
 # IV. Model Training
 
 Các tham số cố định, như tên cột, địa chỉ file in/out, được đưa vào file `constants.py`:
