@@ -15,7 +15,9 @@ python3 train.py
 
 # Rerun the evaluation
 
-After running the training step, the result will be stored at [evaluate/](./benchmark/) directory. Because the metrics to evaluate the best parameters needed to be considered by human, you need to manually input them at this step.
+After running the training step, the result will be stored at [evaluate/](./benchmark/) directory. Because the metrics to evaluate the best parameters needed to be considered by human, you need to manually input them at this step. 
+
+Note: This step will also save the models. More result would be printed out.
 
 Change the `MODEL_DICT` at [evaluate.py](./evaluate.py).
 

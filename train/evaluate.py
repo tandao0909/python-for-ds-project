@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from typing import Any
 
+import joblib
 import pandas as pd
 
 from sklearn.svm import SVR
@@ -29,8 +30,9 @@ MODEL_DICT: dict[str, Any]  = {
     "Extra Tree": ExtraTreesRegressor(n_jobs=-1),
 }
 BENCHMARK_PATH = os.path.join(BENCHMARK_DIRPATH, "evaluate.csv")
+MODEL_DIRPATH = os.path.join(os.path.dirname(__file__), "models")
 
-def train_ensemble_models(
+def evaluate_models(
     X: pd.DataFrame, y: pd.Series
 ):
     Path(BENCHMARK_PATH).parent.mkdir(parents=True, exist_ok=True)
@@ -42,9 +44,17 @@ def train_ensemble_models(
     train_default_models(X, y, model_dict=MODEL_DICT, benchmark_path=BENCHMARK_PATH)
     print(f"See the evaluation results at {BENCHMARK_PATH}")
 
+def save_models(X: pd.DataFrame, y: pd.Series):
+    Path(MODEL_DIRPATH).mkdir(parents=True, exist_ok=True)
+    for model_name, model in MODEL_DICT.items():
+        model.fit(X, y)
+        model_path = os.path.join(MODEL_DIRPATH, f"{model_name}.joblib")
+        joblib.dump(model, model_path)
+    print(f"Models are saved at {MODEL_DIRPATH}.")
 
 if __name__ == "__main__":
     data = pd.read_csv(TEST_PATH)
     X = data.drop(TARGET_COLUMN, axis=1)
     y = data[TARGET_COLUMN]
-    train_ensemble_models(X, y)
+    evaluate_models(X, y)
+    save_models(X, y)
