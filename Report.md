@@ -639,21 +639,40 @@ from Visualize import (
 Dựa trên các biểu đồ histogram và boxplot:
 
 - `price`:
-    - Giá trung bình: 6.53 triệu.
-    - Giá dao động từ 0 đến 40 triệu.
-    - Có sự hiện diện của giá trị ngoại lai với giá rất cao.
-    - Phân phối lệch phải, tức là phần lớn giá trị thấp.
+    - **Trung bình và phân phối**:
+       - Giá trung bình: **6.53 triệu**.
+       - Biểu đồ histogram cho thấy phần lớn dữ liệu tập trung ở mức giá thấp (0 - 10 triệu).
+       - Phân phối lệch phải (_right-skewed_), phổ biến trong dữ liệu giá bất động sản.
+   - **Ngoại lai**:
+       - Các giá trị rất cao (trên 30 triệu) có thể là ngoại lệ. Có thể do lỗi nhập liệu hoặc giá đặc biệt cao.
 
 - `area`:
-    - Diện tích trung bình: 76.43 m².
-    - Phần lớn diện tích tập trung dưới 100 m², nhưng có vài ngoại lệ rất lớn (> 400 m²).
+    - **Trung bình và phân phối**:
+       - Diện tích trung bình: **76.43 m²**.
+       - Phần lớn các bất động sản có diện tích dưới 100 m².
+       - Phân phối lệch phải do một số ít bất động sản có diện tích rất lớn (trên 400 m²).
+   - **Ngoại lai**:
+       - Các giá trị vượt quá 400 m² có thể là ngoại lệ (biệt thự hoặc lỗi dữ liệu).
 
 - `bedrooms`:
-    - Trung bình: 3.41 phòng ngủ.
-    - Ngoại lai rõ ràng khi số phòng vượt 20.
+    - **Trung bình và phân phối**:
+       - Trung bình: **3.41 phòng ngủ**.
+       - Phần lớn dữ liệu tập trung từ 1 đến 5 phòng ngủ.
+   - **Ngoại lai**:
+       - Số phòng ngủ trên 20 là ngoại lệ. Hiếm gặp và cần kiểm tra thêm (có thể là nhà tập thể hoặc lỗi dữ liệu).
 
-- `wc` và `n_floors`:
-    - Các cột này cũng có các ngoại lai tương tự, ví dụ: số tầng lên đến 900.
+- `wc`:
+    - **Trung bình và phân phối**:
+       - Phân phối tương tự như `bedrooms`, với phần lớn dữ liệu dưới 5 phòng vệ sinh.
+   - **Ngoại lai**:
+       - Giá trị vượt trên 20 phòng vệ sinh có thể không thực tế.
+
+- `n_floors`:
+    - **Trung bình và phân phối**:
+       - Phần lớn dữ liệu có số tầng nhỏ hơn 5.
+       - Histogram cho thấy phần lớn bất động sản là nhà cấp thấp hoặc tòa nhà thấp tầng.
+   - **Ngoại lai**:
+       - Giá trị cao nhất (900 tầng) rõ ràng không hợp lý và có thể là lỗi nhập liệu.
 
 ### 2.3. Tình trạng dữ liệu thiếu:
 
@@ -689,19 +708,20 @@ Các cột quan trọng bị thiếu dữ liệu nhiều:
 ![Average Price](./images/averageprice.png)
 
 - Phân phối số lượng theo năm:
-    - Số lượng listings cao nhất là năm 2023.
-    - Năm 2024 số lượng giảm đáng kể, cho thấy cần kiểm tra nguyên nhân.
+    - Năm **2023** có số lượng listings cao nhất, cho thấy đây là năm sôi động với nhiều giao dịch.
+    - Năm **2024** ghi nhận sự giảm đáng kể trong số lượng listings, có thể do thị trường trầm lắng hoặc thay đổi điều kiện kinh tế.
 
 - Biến động giá trung bình theo mùa:
-    - Mùa thu và mùa xuân có thể là thời điểm "cao điểm" hoặc thuận lợi cho việc mua nhà.
-    - Mùa hè có giá trung bình thấp nhất, có thể là cơ hội tốt để mua nhà hoặc đầu tư
+    - **Mùa thu** và **mùa xuân** ghi nhận giá trung bình cao nhất, có thể là thời điểm "cao điểm" khi nhu cầu mua nhà tăng.
+    - **Mùa hè** có giá trung bình thấp nhất, có thể là cơ hội tốt để mua nhà hoặc đầu tư.
 
 - Biến động giá trung bình theo tháng:
-    - Giá cao nhất vào tháng 3 (mùa xuân) và thấp nhất vào tháng 6.
-    - Giá mùa thu cao hơn các mùa khác.
+    - Giá cao nhất vào tháng **3** (mùa xuân), có thể liên quan đến lễ hội hoặc tâm lý đầu năm.
+    - Giá thấp nhất vào tháng **6**, cho thấy đây là thời điểm có ít cạnh tranh hơn từ người mua.
 
 - Phân phối giá theo ngày trong tuần:
-    - Giá trung bình ổn định nhưng cao hơn vào cuối tuần (chủ nhật).
+    - Giá trung bình khá ổn định giữa các ngày.
+    - Giá cao nhất vào **chủ nhật**, có thể do đây là thời điểm người mua có thời gian để tìm kiếm và đưa ra quyết định.
 
 ### 2.5. Các phát hiện chính
 
