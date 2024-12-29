@@ -60,6 +60,8 @@
   - [6. Tách tập dữ liệu](#6-tách-tập-dữ-liệu)
   - [7. Xây dựng pipeline với `HousingPipeline.py`](#7-xây-dựng-pipeline-với-housingpipelinepy)
 - [IV. Model Training](#iv-model-training)
+- [V. Model Evaluation](#v-model-evalution)
+
 # I. Data Crawling and Preprocessing
 
 ## Thu thập dữ liệu
@@ -3105,3 +3107,21 @@ type TrainingInterface interface {
 ```
 
 Điều này là vì tuy interface giống nhau, và có thể sử dụng chung các hàm trợ giúp, bản chất chức năng các hàm này có thể thay đổi, và vì thế chúng ta không nên tạo thêm 1 hàm utility mới, mà nên viết riêng ra từ đầu.
+
+# V. Model Evalution
+
+Quá trình fine tune, vì mô hình svm và ensemble có thời gian train quá lâu, nhóm chỉ có thể sử dụng tham số mặc định, tuy vậy, việc sử dụng tham số đã fine tune đã được giải thích ở trong thư mục [train/](./train/)
+Sau khi thực hiện fine tune, chạy script [evaluate.py](./train/evaluate.py) sẽ tự động lưu đánh gái và lưu các mô hình đã fine tune lại. Tuy vậy, vì việc lựa chọn metric để đánh giá xem mô hình nào là tốt nhất đòi hỏi có sự đánh giá của con người, ta cần phải nhập lại tham số mà ta cho là tốt nhất vào file này để chạy lại. Hướng dẫn có trong [README](./train/README.md) của thư mục này.
+
+## Kết quả
+
+Dưới đây là kết quả đánh giá trên tập test.
+
+| model_name | rmse                | r2                  | aic                | bic                | adjusted_r2        | mape                | mae                 | explained_variance  | train_time(second)  |
+|------------|---------------------|---------------------|--------------------|--------------------|--------------------|---------------------|---------------------|---------------------|---------------------|
+| Ridge      | 1.985795338722654   | 0.4538807588816463  | 1619.1695323956956 | 1664.7292570862746 | 0.4496326403249782 | 11628232236659.03   | 1.4810561416941677  | 0.4538807588816463  | 0.0014252662658691  |
+| Tree       | 1.6746113529910678  | 0.6116292027877468  | 1221.366311415272  | 1266.926036105851  | 0.6086081680644017 | 16928697828121.854  | 1.2085530462736964  | 0.6116292027877468  | 0.0038893222808837  |
+| Rbf        | 2.67829685309823    | 0.0065730757188575  | 2317.4126638969083 | 2362.972388587488  | -0.0011545321623267| 17394499472919.572  | 2.0950120275727344  | 0.0065734179528859  | 0.0489087104797363  |
+| Extra Tree | 6.658766113998042e-15| 1.0                | -76170.39368474306 | -76124.83396005248 | 1.0                | 9.853109095779605e-16| 4.4529147578611235e-15| 1.0                | 0.07291269302368164 |
+
+Từ đây, ta nhận thấy Extra Tree Regressor là mô hình tốt nhất.
