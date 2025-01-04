@@ -8,7 +8,7 @@ from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn.linear_model._base import LinearModel
 
 from constants import TRAIN_PATH, TARGET_COLUMN, BENCHMARK_DIRPATH
-from utils import train_default_models, fine_tune_models
+from utils import train_default_models, fine_tune_models, preprocess_data
 
 BENCHMARK_PATH = os.path.join(BENCHMARK_DIRPATH, "linear_benchmark.csv")
 MODEL_DICT: dict[str, LinearModel] = {
@@ -52,6 +52,7 @@ def train_linear_models(
 
 if __name__ == "__main__":
     data = pd.read_csv(TRAIN_PATH)
+    data = preprocess_data(data)
     X = data.drop(TARGET_COLUMN, axis=1)
     y = data[TARGET_COLUMN]
     train_linear_models(X, y)

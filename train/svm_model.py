@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.svm import SVR, LinearSVR
 
 from constants import TRAIN_PATH, TARGET_COLUMN, BENCHMARK_DIRPATH
-from utils import train_default_models, fine_tune_models
+from utils import train_default_models, fine_tune_models, preprocess_data
 
 BENCHMARK_PATH = os.path.join(BENCHMARK_DIRPATH, "svm_benchmark.csv")
 MODEL_DICT: dict[str, Any] = {
@@ -67,6 +67,7 @@ def train_svm_models(
 
 if __name__ == "__main__":
     data = pd.read_csv(TRAIN_PATH)
+    data = preprocess_data(data)
     X = data.drop(TARGET_COLUMN, axis=1)
     y = data[TARGET_COLUMN]
     train_svm_models(X, y)

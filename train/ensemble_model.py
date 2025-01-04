@@ -14,8 +14,9 @@ from sklearn.ensemble import (
 from catboost import CatBoostRegressor
 from xgboost import XGBRegressor
 from lightgbm import LGBMRegressor
+
 from constants import TRAIN_PATH, TARGET_COLUMN, BENCHMARK_DIRPATH
-from utils import train_default_models, fine_tune_models
+from utils import train_default_models, fine_tune_models, preprocess_data
 
 BENCHMARK_PATH = os.path.join(BENCHMARK_DIRPATH, "ensemble_benchmark.csv")
 MODEL_DICT: dict[str, Any] = {
@@ -122,6 +123,7 @@ def train_ensemble_models(
 
 if __name__ == "__main__":
     data = pd.read_csv(TRAIN_PATH)
+    data = preprocess_data(data)
     X = data.drop(TARGET_COLUMN, axis=1)
     y = data[TARGET_COLUMN]
     train_ensemble_models(X, y)

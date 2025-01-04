@@ -5,6 +5,7 @@ from tree_model import train_tree_models
 from svm_model import train_svm_models
 from ensemble_model import train_ensemble_models
 
+from utils import preprocess_data
 from constants import TRAIN_PATH, TARGET_COLUMN
 
 
@@ -18,6 +19,7 @@ def train_models(
 
 if __name__ == "__main__":
     data = pd.read_csv(TRAIN_PATH)
+    data = preprocess_data(data)
     X = data.drop(TARGET_COLUMN, axis=1)
     y = data[TARGET_COLUMN]
-    train_models(X, y, fine_tune=True)
+    train_models(X, y, fine_tune=False)
