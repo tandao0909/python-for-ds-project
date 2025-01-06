@@ -59,8 +59,8 @@
       - [5.8.5. RandomizedSearchCV](#585-randomizedsearchcv)
   - [6. Tách tập dữ liệu](#6-tách-tập-dữ-liệu)
   - [7. Xây dựng pipeline với `HousingPipeline.py`](#7-xây-dựng-pipeline-với-housingpipelinepy)
-- [IV. Model Training](#iv-model-training)
-- [V. Model Evaluation](#v-model-evalution)
+- [III. Model Training](#iii-model-training)
+- [IV. Model Evaluation](#iv-model-evalution)
 
 # I. Data Crawling and Preprocessing
 
