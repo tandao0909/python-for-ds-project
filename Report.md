@@ -639,11 +639,11 @@ Dựa trên các biểu đồ histogram và boxplot:
 
 - `price`:
     - **Trung bình và phân phối**:
-       - Giá trung bình: **6.53 triệu**.
-       - Biểu đồ histogram cho thấy phần lớn dữ liệu tập trung ở mức giá thấp (0 - 10 triệu).
+       - Giá trung bình: **6.53 tỷ**.
+       - Biểu đồ histogram cho thấy phần lớn dữ liệu tập trung ở mức giá thấp (0 - 10 tỷ).
        - Phân phối lệch phải (_right-skewed_), phổ biến trong dữ liệu giá bất động sản.
    - **Ngoại lai**:
-       - Các giá trị rất cao (trên 30 triệu) có thể là ngoại lệ. Có thể do lỗi nhập liệu hoặc giá đặc biệt cao.
+       - Các giá trị rất cao (trên 30 tỷ) có thể là ngoại lệ. Có thể do lỗi nhập liệu hoặc giá đặc biệt cao.
 
 - `area`:
     - **Trung bình và phân phối**:
