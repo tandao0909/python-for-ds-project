@@ -53,9 +53,8 @@
     - [5.7. Chạy chương trình](#57-chạy-chương-trình)
       - [5.7.1. Variance Threshold](#571-variance-threshold)
       - [5.7.2. Select K Best](#572-select-k-best)
-      - [5.7.3. Mutual Information](#573-mutual-information)
-      - [5.7.4. GridSearchCV](#574-gridsearchcv)
-      - [5.7.5. RandomizedSearchCV](#575-randomizedsearchcv)
+      - [5.7.3. GridSearchCV](#573-gridsearchcv)
+      - [5.7.4. RandomizedSearchCV](#574-randomizedsearchcv)
   - [6. Tách tập dữ liệu](#6-tách-tập-dữ-liệu)
   - [7. Xây dựng pipeline với `HousingPipeline.py`](#7-xây-dựng-pipeline-với-housingpipelinepy)
 - [III. Model Training](#iii-model-training)
@@ -2511,38 +2510,7 @@ Selected columns after applying SelectKBest: Index(['bedrooms', 'wc', 'n_floors'
 
 Phương pháp **Select K Best** ở trên chọn ra 5 đặc trưng quan trọng nhất dựa trên hàm score `f_regression`. Để chọn ra số lượng đặc trưng tùy ý, chỉ cần thay đổi giá trị của `k`.
 
-#### 5.7.3. Mutual Information
-
-```python
-# Assuming X and y are already defined
-mi = mutual_info_regression(X, y)
-
-# Normalize the scores for comparison
-mi_normalized = mi / mi.max()
-
-# Create a DataFrame to store the scores
-feature_scores = pd.DataFrame({
-    'Feature': X.columns,
-    'Mutual Information': mi_normalized
-})
-
-# Sort features by Mutual Information in descending order
-feature_scores = feature_scores.sort_values(by='Mutual Information', ascending=False)
-
-# Select the top_k features based on Mutual Information
-top_k_mi = 5  # Define the number of top features you want to select
-top_features = set(feature_scores.head(top_k_mi)['Feature'].tolist())
-
-print(top_features)
-```
-
-```md
-{'Distance to center 0', 'latitude', 'wc', 'bedrooms', 'Distance to center 1'}
-```
-
-Phương pháp **Mutual Information** ở trên chọn ra 5 đặc trưng quan trọng nhất. Để chọn ra số lượng đặc trưng tùy ý, chỉ cần thay đổi giá trị của `top_k_mi`.
-
-#### 5.7.4. GridSearchCV
+#### 5.7.3. GridSearchCV
 
 ```python
 # Define the parameter grid to search for the best parameters
@@ -2603,7 +2571,7 @@ Distance to center 1: 0.07854518564810725
 
 Các đặc trưng quan trọng được chọn từ mô hình Random Forest. Ta có thể chọn ra $k$ đặc trưng quan trọng nhất từ mô hình tùy ý dựa vào thứ tự giảm dần của feature importance.
 
-#### 5.7.5. RandomizedSearchCV
+#### 5.7.4. RandomizedSearchCV
 
 ```python
 # Define the parameter distribution
