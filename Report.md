@@ -13,6 +13,7 @@
       - [Tổng quan, ý tưởng](#tổng-quan-ý-tưởng)
       - [Xử lý các dữ liệu số](#xử-lý-các-dữ-liệu-số)
       - [Tạo ra các cột dữ liệu mới hữu ích cho bài toán](#tạo-ra-các-cột-dữ-liệu-mới-hữu-ích-cho-bài-toán)
+    - [Trích xuất đặt trưng về địa chỉ](#trích-xuất-đặt-trưng-về-địa-chỉ)
 - [II. EDA và Feature Engineering](#ii-eda-và-feature-engineering)
   - [1. Khai báo thư viện và thiết lập](#1-khai-báo-thư-viện-và-thiết-lập)
   - [2. Rút ra thông tin từ dữ liệu](#2-rút-ra-thông-tin-từ-dữ-liệu)
@@ -551,6 +552,46 @@ Trong phần này, chúng tôi vẫn cố gắng khai thác tối đa thông tin
     - Tăng khả năng lọc và tìm kiếm bất động sản phù hợp với nhu cầu cụ thể của người dùng (ví dụ: ưu tiên mặt tiền, có gara).
     - Cải thiện độ chính xác trong định giá và phân tích giá trị tài sản.
 
+### Trích xuất đặt trưng về địa chỉ
+
+Bởi vì dữ liệu ban đầu chỉ có các cột địa chỉ cào được là `Location1` và `Location2` với:
+- `Location1` là dữ liệu về quận và thành phố
+- `Location2` là địa chỉ chi tiết 
+
+Ví dụ trong hai hình ảnh sau:
+
+![Location1](images/location1.png)
+
+![Location2](images/location2.png)
+
+`Location1` sẽ là "Bình Thạnh , Hồ Chí minh" và `Location2` sẽ là "Đường Chu Văn An, 12". Nhưng có rất nhiều điểm dữ liệu mà không thu được `Location2` có định dạng tốt như thế, ví dụ như:
+
+| Location1              | Location2                             |
+|------------------------|---------------------------------------|
+| Bình Chánh , Hồ Chí Minh | TÂN KIÊN BÌNH CHÁNH                   |
+| Quận 6 , Hồ Chí Minh     | Phường 14, Quận 6, Hồ Chí Minh       |
+| Bình Chánh , Hồ Chí Minh | 123 Phu Dong                         |
+| Quận 4 , Hồ Chí Minh     | Phố Ẩm Thực Vĩnh Khánh               |
+| Quận 7 , Hồ Chí Minh     | 41/36/1g chuyên dùng 9, p Phú Mỹ q7  |
+| Quận 10 , Hồ Chí Minh    | 606 đường 3/2, P14, Q10              |
+
+Các Location2 có nhiều hàng có cả số nhà, tên đường, phường và quận và format rất khác nhau. Và đa số là không có số nhà, nên chúng tôi sẽ chỉ trích xuất tên đường và quận của một điểm dữ liệu mà thôi.
+
+Về Quận thì `Location1` là một cột dữ liệu sạch, nên dễ dàng bằng cách lấy các phần ở trước dấu phẩy.
+
+Còn về đường thì chúng tôi cố gắng cào tất cả các đường của từng quận trên địa bàn thành phố Hồ Chí Minh sau đó dùng các vòng lặp, kết hợp với điều kiện rẽ nhánh để đưa về cùng một định dạng. 
+
+Và kết quả sau khi áp dụng bộ lọc là: (với "123 Phu Dong" bị loại bỏ)
+
+| Street       | District    |
+|--------------|-------------|
+| tân kiên     | bình chánh  |
+| NaN          | quận 6      |
+| vĩnh khánh   | quận 4      |
+| chuyên dùng  | quận 7      |
+| 3/2          | quận 10     |
+
+Chi tiết việc cào tất cả tên đường ở [crawl_street_names.py](crawl_street_names.py)
 
 # II. EDA và Feature Engineering
 

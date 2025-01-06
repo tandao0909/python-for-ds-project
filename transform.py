@@ -184,6 +184,8 @@ def process_street(address, district, street_names):
     """
     if pd.isnull(address):
         return pd.NA
+    if "múc giá" in address or "sao chép liên kết" in address:
+        return pd.NA
     address = insert_so_into_street(address).split(",")[0]
     first_5_letters_address = " ".join(address.split()[:5])
     if district in street_names:
