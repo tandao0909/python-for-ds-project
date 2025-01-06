@@ -51,31 +51,6 @@ class FeatureSelector:
         self.features_selected.append(selected_features)
         return selected_features
 
-    def mutual_information_selection(self) -> Set[str]:
-        """
-        Compute Mutual Information scores and select the top features based on the scores.
-        
-        :return: A set of selected feature names.
-        """
-        mi = mutual_info_regression(self.X, self.y)
-
-        # Normalize the scores for comparison
-        mi_normalized = mi / mi.max()
-
-        # Create a DataFrame to store the scores
-        feature_scores = pd.DataFrame({
-            'Feature': self.X.columns,
-            'Mutual Information': mi_normalized
-        })
-
-        # Sort features by Mutual Information in descending order
-        feature_scores = feature_scores.sort_values(by='Mutual Information', ascending=False)
-
-        # Select the top_k features based on Mutual Information
-        top_features = set(feature_scores.head(self.top_k_mi)['Feature'].tolist())
-        self.features_selected.append(top_features)
-        return top_features
-
     def grid_search_feature_selection(self) -> Set[str]:
         """
         Use GridSearchCV to optimize hyperparameters of a RandomForestRegressor, and select features based on feature importance.
