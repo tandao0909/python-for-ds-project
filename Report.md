@@ -2974,7 +2974,7 @@ if __name__ == '__main__':
     df_test.to_csv('datasets/housing_test.csv', index=False)
 ```
 
-# IV. Model Training
+# III. Model Training
 
 Các tham số cố định, như tên cột, địa chỉ file in/out, được đưa vào file `constants.py`:
 
@@ -3128,7 +3128,7 @@ type TrainingInterface interface {
 
 Điều này là vì tuy interface giống nhau, và có thể sử dụng chung các hàm trợ giúp, bản chất chức năng các hàm này có thể thay đổi, và vì thế chúng ta không nên tạo thêm 1 hàm utility mới, mà nên viết riêng ra từ đầu.
 
-# V. Model Evalution
+# IV. Model Evalution
 
 Quá trình fine tune, vì mô hình svm và ensemble có thời gian train quá lâu, nhóm chỉ có thể sử dụng tham số mặc định, tuy vậy, việc sử dụng tham số đã fine tune đã được giải thích ở trong thư mục [train/](./train/)
 Sau khi thực hiện fine tune, chạy script [evaluate.py](./train/evaluate.py) sẽ tự động lưu đánh gái và lưu các mô hình đã fine tune lại. Tuy vậy, vì việc lựa chọn metric để đánh giá xem mô hình nào là tốt nhất đòi hỏi có sự đánh giá của con người, ta cần phải nhập lại tham số mà ta cho là tốt nhất vào file này để chạy lại. Hướng dẫn có trong [README](./train/README.md) của thư mục này.
