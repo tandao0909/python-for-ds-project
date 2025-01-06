@@ -48,19 +48,19 @@
     - [5.2. `FeatureSelector` class](#52-featureselector-class)
     - [5.3. Phương pháp Variance Threshold](#53-phương-pháp-variance-threshold)
     - [5.4. Phương pháp Select K Best](#54-phương-pháp-select-k-best)
-    - [5.5. Phương pháp Mutual Information](#55-phương-pháp-mutual-information)
-    - [5.6. Phương pháp GridSearchCV](#56-phương-pháp-gridsearchcv)
-    - [5.7. Phương pháp RandomizedSearchCV](#57-phương-pháp-randomizedsearchcv)
-    - [5.8. Chạy chương trình](#58-chạy-chương-trình)
-      - [5.8.1. Variance Threshold](#581-variance-threshold)
-      - [5.8.2. Select K Best](#582-select-k-best)
-      - [5.8.3. Mutual Information](#583-mutual-information)
-      - [5.8.4. GridSearchCV](#584-gridsearchcv)
-      - [5.8.5. RandomizedSearchCV](#585-randomizedsearchcv)
+    - [5.5. Phương pháp GridSearchCV](#55-phương-pháp-gridsearchcv)
+    - [5.6. Phương pháp RandomizedSearchCV](#56-phương-pháp-randomizedsearchcv)
+    - [5.7. Chạy chương trình](#57-chạy-chương-trình)
+      - [5.7.1. Variance Threshold](#571-variance-threshold)
+      - [5.7.2. Select K Best](#572-select-k-best)
+      - [5.7.3. Mutual Information](#573-mutual-information)
+      - [5.7.4. GridSearchCV](#574-gridsearchcv)
+      - [5.7.5. RandomizedSearchCV](#575-randomizedsearchcv)
   - [6. Tách tập dữ liệu](#6-tách-tập-dữ-liệu)
   - [7. Xây dựng pipeline với `HousingPipeline.py`](#7-xây-dựng-pipeline-với-housingpipelinepy)
 - [III. Model Training](#iii-model-training)
-- [IV. Model Evaluation](#iv-model-evalution)
+- [IV. Model Evalution](#iv-model-evalution)
+  - [Kết quả](#kết-quả)
 
 # I. Data Crawling and Preprocessing
 
@@ -2337,7 +2337,20 @@ Cài đặt chương trình:
 Cách hoạt động:
 
 1. **Chọn tiêu chí đánh giá**: **Select K Best** sử dụng một hàm đánh giá thống kê để tính điểm cho từng đặc trưng so với nhãn mục tiêu. Bài toán này đang dùng hàm:
-    - `mutual_info_regression`: Dùng cho bài toán hồi quy, dựa trên lý thuyết thông tin, đánh giá mối quan hệ phi tuyến giữa đặc trưng và nhãn.
+    - `mutual_info_regression`:  **Mutual Information (MI)** là một phương pháp đo lường mức độ phụ thuộc giữa hai biến ngẫu nhiên. Trong Feature Selection, Mutual Information được sử dụng để đánh giá mức độ tương quan giữa một đặc trưng và biến mục tiêu. Phương pháp này không chỉ phát hiện mối quan hệ tuyến tính mà còn đo lường các mối quan hệ phi tuyến phức tạp.
+    Ngoài ra, MI là một thước đo trong lý thuyết thông tin, cho biết lượng thông tin mà một đặc trưng \( X_j \) chia sẻ với biến mục tiêu \( y \).
+    1. Với một đặc trưng \( X_j \) và biến mục tiêu \( y \), MI được tính:
+    \[
+    MI(X_j, y) = \iint p(x, y) \cdot \log \left( \frac{p(x, y)}{p(x) \cdot p(y)} \right) dx \, dy
+    \]
+    Trong đó:
+       - \( p(x, y) \): Phân phối xác suất chung của \( X_j \) và \( y \).
+       - \( p(x) \): Phân phối xác suất biên của \( X_j \).
+       - \( p(y) \): Phân phối xác suất biên của \( y \).
+
+    2. Ý nghĩa:
+       - Nếu \( X_j \) và \( y \) độc lập, \( p(x, y) = p(x) \cdot p(y) \), do đó \( MI(X_j, y) = 0 \).
+       - Nếu \( X_j \) và \( y \) phụ thuộc mạnh, \( MI(X_j, y) > 0 \), với giá trị càng cao cho thấy \( X_j \) chứa nhiều thông tin về \( y \).
 
 2. **Tính điểm cho mỗi đặc trưng**: Hàm đánh giá sẽ gán một điểm số cho từng đặc trưng trong tập dữ liệu.
 
@@ -2358,62 +2371,7 @@ def select_k_best(self) -> Set[str]:
         return selected_features
 ```
 
-### 5.5. Phương pháp Mutual Information
-
-**Mutual Information (MI)** là một phương pháp đo lường mức độ phụ thuộc giữa hai biến ngẫu nhiên. Trong Feature Selection, Mutual Information được sử dụng để đánh giá mức độ tương quan giữa một đặc trưng và biến mục tiêu. Phương pháp này không chỉ phát hiện mối quan hệ tuyến tính mà còn đo lường các mối quan hệ phi tuyến phức tạp.
-
-Ngoài ra, MI là một thước đo trong lý thuyết thông tin, cho biết lượng thông tin mà một đặc trưng \( X_j \) chia sẻ với biến mục tiêu \( y \).
-
-1. Với một đặc trưng \( X_j \) và biến mục tiêu \( y \), MI được tính:
-   \[
-   MI(X_j, y) = \iint p(x, y) \cdot \log \left( \frac{p(x, y)}{p(x) \cdot p(y)} \right) dx \, dy
-   \]
-   Trong đó:
-   - \( p(x, y) \): Phân phối xác suất chung của \( X_j \) và \( y \).
-   - \( p(x) \): Phân phối xác suất biên của \( X_j \).
-   - \( p(y) \): Phân phối xác suất biên của \( y \).
-
-2. Ý nghĩa:
-   - Nếu \( X_j \) và \( y \) độc lập, \( p(x, y) = p(x) \cdot p(y) \), do đó \( MI(X_j, y) = 0 \).
-   - Nếu \( X_j \) và \( y \) phụ thuộc mạnh, \( MI(X_j, y) > 0 \), với giá trị càng cao cho thấy \( X_j \) chứa nhiều thông tin về \( y \).
-
-3. Chuẩn hóa MI: MI có thể được chuẩn hóa để có giá trị trong khoảng \([0, 1]\) bằng cách chia cho giá trị lớn nhất:
-     \[
-     MI_{\text{norm}} = \frac{MI(X_j, y)}{\max(MI(X, y))}
-     \]
-
-4. MI có thể được tính trong cả bài toán hồi quy và phân loại, nhờ khả năng phát hiện các mối quan hệ phi tuyến phức tạp.
-
-Cài đặt chương trình:
-
-```python
-    def mutual_information_selection(self) -> Set[str]:
-        """
-        Compute Mutual Information scores and select the top features based on the scores.
-        
-        :return: A set of selected feature names.
-        """
-        mi = mutual_info_regression(self.X, self.y)
-
-        # Normalize the scores for comparison
-        mi_normalized = mi / mi.max()
-
-        # Create a DataFrame to store the scores
-        feature_scores = pd.DataFrame({
-            'Feature': self.X.columns,
-            'Mutual Information': mi_normalized
-        })
-
-        # Sort features by Mutual Information in descending order
-        feature_scores = feature_scores.sort_values(by='Mutual Information', ascending=False)
-
-        # Select the top_k features based on Mutual Information
-        top_features = set(feature_scores.head(self.top_k_mi)['Feature'].tolist())
-        self.features_selected.append(top_features)
-        return top_features
-```
-
-### 5.6. Phương pháp GridSearchCV
+### 5.5. Phương pháp GridSearchCV
 
 **GridSearchCV** là một công cụ mạnh mẽ trong thư viện Scikit-learn để tìm kiếm tổ hợp siêu tham số (hyperparameter) tốt nhất cho một mô hình học máy. Phương pháp này sử dụng **tìm kiếm lưới (grid search)** kết hợp với **cross-validation (CV)** để đảm bảo hiệu suất của mô hình được tối ưu hóa trên dữ liệu chưa thấy trước.
 
@@ -2462,7 +2420,7 @@ Cài đặt chương trình:
         return selected_features
 ```
 
-### 5.7. Phương pháp RandomizedSearchCV
+### 5.6. Phương pháp RandomizedSearchCV
 
 **RandomizedSearchCV** là một kỹ thuật tối ưu hóa siêu tham số (hyperparameter optimization) được sử dụng trong học máy. Khác với **GridSearchCV**, **RandomizedSearchCV** không thử tất cả các tổ hợp tham số có thể, mà chọn ngẫu nhiên một số tổ hợp nhất định từ tập tham số đã chỉ định. Điều này giúp giảm thời gian tính toán trong khi vẫn có khả năng tìm ra tổ hợp tham số tốt nhất.
 
@@ -2511,7 +2469,7 @@ def randomized_search_feature_selection(self) -> Set[str]:
         return selected_features
 ```
 
-### 5.8. Chạy chương trình
+### 5.7. Chạy chương trình
 
 Việc chạy chương trình cho phần Feature Selection sẽ được tích hợp và trình bày ở phần [7. Xây dựng pipeline với `HousingPipeline.py`](#7-xây-dựng-pipeline-với-housingpipelinepy) bên dưới. Tại đây, chương trình sẽ chạy toàn bộ quy trình Feature Selection và trả về danh sách các đặc trưng quan trọng nhất cho mô hình thông qua hàm `combine_selected_features`.
 
@@ -2519,7 +2477,7 @@ Vì vậy, để trực quan hơn cho quy trình Feature Selection, tôi sẽ t�
 
 Các thư viện sẽ được khai báo tương tự như ở phần [5.1. Khai báo thư viện](#51-khai-báo-thư-viện).
 
-#### 5.8.1. Variance Threshold
+#### 5.7.1. Variance Threshold
 
 ```pythonX, y = housing_cleaned_coordinations.drop('price', axis=1), housing_cleaned_coordinations['price']
 
@@ -2538,7 +2496,7 @@ Index(['id', 'area', 'bedrooms', 'wc', 'n_floors', 'car_place', 'Cluster',
 
 Đối với phương pháp **Variance Threshold**, sau khi áp dụng, chúng ta giữ lại 9 đặc trưng quan trọng nhất với ngưỡng phương sai là $0.1$.
 
-#### 5.8.2. Select K Best
+#### 5.7.2. Select K Best
 
 ```python
 # Use f_regression for regression problems
@@ -2553,7 +2511,7 @@ Selected columns after applying SelectKBest: Index(['bedrooms', 'wc', 'n_floors'
 
 Phương pháp **Select K Best** ở trên chọn ra 5 đặc trưng quan trọng nhất dựa trên hàm score `f_regression`. Để chọn ra số lượng đặc trưng tùy ý, chỉ cần thay đổi giá trị của `k`.
 
-#### 5.8.3. Mutual Information
+#### 5.7.3. Mutual Information
 
 ```python
 # Assuming X and y are already defined
@@ -2584,7 +2542,7 @@ print(top_features)
 
 Phương pháp **Mutual Information** ở trên chọn ra 5 đặc trưng quan trọng nhất. Để chọn ra số lượng đặc trưng tùy ý, chỉ cần thay đổi giá trị của `top_k_mi`.
 
-#### 5.8.4. GridSearchCV
+#### 5.7.4. GridSearchCV
 
 ```python
 # Define the parameter grid to search for the best parameters
@@ -2645,7 +2603,7 @@ Distance to center 1: 0.07854518564810725
 
 Các đặc trưng quan trọng được chọn từ mô hình Random Forest. Ta có thể chọn ra $k$ đặc trưng quan trọng nhất từ mô hình tùy ý dựa vào thứ tự giảm dần của feature importance.
 
-#### 5.8.5. RandomizedSearchCV
+#### 5.7.5. RandomizedSearchCV
 
 ```python
 # Define the parameter distribution
