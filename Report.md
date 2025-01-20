@@ -60,7 +60,9 @@
   - [7. Xây dựng pipeline với `HousingPipeline.py`](#7-xây-dựng-pipeline-với-housingpipelinepy)
 - [III. Model Training](#iii-model-training)
 - [IV. Model Evalution](#iv-model-evalution)
+  - [Giải thích các metric](#giải-thích-các-metric)
   - [Kết quả](#kết-quả)
+- [V. Conclusion](#v-conclusion)
 
 # I. Data Crawling and Preprocessing
 
@@ -3261,3 +3263,7 @@ Dưới đây là kết quả đánh giá trên tập test.
 | Extra Tree | 6.658766113998042e-15| 1.0                | -76170.39368474306 | -76124.83396005248 | 1.0                | 9.853109095779605e-16| 4.4529147578611235e-15| 1.0                | 0.07291269302368164 |
 
 Xét tất cả các metric, ta nhận thấy Extra Tree Regressor là mô hình tốt nhất.
+
+# V. Conclusion
+
+Từ project này, ta nhận thấy khả năng áp dụng của Python vào Web Scraping, Data Processing, Model Training. Quá trình phân tích và so sánh nhiều mô hình cho thấy mô hình Extra Tree Regressor có kết quả tốt nhất trên tất cả các metric. Từ đây, ta thấy sự hiệu quả của các thuật toán học máy nâng cao đối với bài toán dự đoán giá nhà. Tóm lại, Python là một ngôn ngữ mạnh mẽ, phục vụ rất tốt các tác vụ liên quan đến dự án khoa học dữ liệu.
