@@ -3184,6 +3184,71 @@ type TrainingInterface interface {
 Quá trình fine tune, vì mô hình svm và ensemble có thời gian train quá lâu, nhóm chỉ có thể sử dụng tham số mặc định, tuy vậy, việc sử dụng tham số đã fine tune đã được giải thích ở trong thư mục [train/](./train/)
 Sau khi thực hiện fine tune, chạy script [evaluate.py](./train/evaluate.py) sẽ tự động lưu đánh gái và lưu các mô hình đã fine tune lại. Tuy vậy, vì việc lựa chọn metric để đánh giá xem mô hình nào là tốt nhất đòi hỏi có sự đánh giá của con người, ta cần phải nhập lại tham số mà ta cho là tốt nhất vào file này để chạy lại. Hướng dẫn có trong [README](./train/README.md) của thư mục này.
 
+## Giải thích các metric
+1. **Root Mean Squared Error (RMSE)**:
+    - **Định nghĩa**: RMSE là căn bậc hai của trung bình bình phương sai số giữa giá trị dự đoán và giá trị thực tế.
+    - **Công thức**: 
+      \[
+      \text{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+      \]
+    - **Diễn giải**: RMSE càng thấp thì mô hình càng tốt. RMSE nhạy cảm với các giá trị ngoại lai.
+
+2. **R-squared (R²)**:
+    - **Định nghĩa**: R² đo lường tỷ lệ phương sai của biến phụ thuộc có thể được giải thích bởi các biến độc lập.
+    - **Công thức**: 
+      \[
+      R^2 = 1 - \frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2}
+      \]
+    - **Diễn giải**: R² dao động từ 0 đến 1. Giá trị R² càng cao thì mô hình càng tốt.
+
+3. **Akaike Information Criterion (AIC)**:
+    - **Định nghĩa**: AIC ước tính chất lượng của mỗi mô hình so với các mô hình khác.
+    - **Công thức**: 
+      \[
+      \text{AIC} = n \cdot \ln\left(\frac{\text{RSS}}{n}\right) + 2k
+      \]
+    - **Diễn giải**: Giá trị AIC càng thấp thì mô hình càng tốt. AIC phạt các mô hình có nhiều tham số hơn.
+
+4. **Bayesian Information Criterion (BIC)**:
+    - **Định nghĩa**: BIC tương tự như AIC nhưng với mức phạt mạnh hơn cho các mô hình có nhiều tham số.
+    - **Công thức**: 
+      \[
+      \text{BIC} = n \cdot \ln\left(\frac{\text{RSS}}{n}\right) + k \cdot \ln(n)
+      \]
+    - **Diễn giải**: Giá trị BIC càng thấp thì mô hình càng tốt.
+
+5. **Adjusted R-squared**:
+    - **Định nghĩa**: Adjusted R² điều chỉnh giá trị R² dựa trên số lượng biến độc lập trong mô hình.
+    - **Công thức**: 
+      \[
+      \text{Adjusted } R^2 = 1 - \left( \frac{(1 - R^2)(n - 1)}{n - k - 1} \right)
+      \]
+    - **Diễn giải**: Giá trị Adjusted R² càng cao thì mô hình càng tốt, có tính đến số lượng biến độc lập.
+
+6. **Mean Absolute Percentage Error (MAPE)**:
+    - **Định nghĩa**: MAPE đo lường độ chính xác của mô hình dưới dạng phần trăm.
+    - **Công thức**: 
+      \[
+      \text{MAPE} = \frac{100}{n} \sum_{i=1}^{n} \left| \frac{y_i - \hat{y}_i}{y_i} \right|
+      \]
+    - **Diễn giải**: Giá trị MAPE càng thấp thì mô hình càng tốt.
+
+7. **Mean Absolute Error (MAE)**:
+    - **Định nghĩa**: MAE là trung bình của các sai số tuyệt đối giữa giá trị dự đoán và giá trị thực tế.
+    - **Công thức**: 
+      \[
+      \text{MAE} = \frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \right|
+      \]
+    - **Diễn giải**: Giá trị MAE càng thấp thì mô hình càng tốt.
+
+8. **Explained Variance**:
+    - **Định nghĩa**: Explained variance đo lường tỷ lệ phương sai của biến phụ thuộc có thể được giải thích bởi các biến độc lập.
+    - **Công thức**: 
+      \[
+      \text{Explained Variance} = 1 - \frac{\text{Var}(y - \hat{y})}{\text{Var}(y)}
+      \]
+    - **Diễn giải**: Giá trị Explained variance càng cao thì mô hình càng tốt.
+
 ## Kết quả
 
 Dưới đây là kết quả đánh giá trên tập test.
@@ -3195,4 +3260,4 @@ Dưới đây là kết quả đánh giá trên tập test.
 | Rbf        | 2.67829685309823    | 0.0065730757188575  | 2317.4126638969083 | 2362.972388587488  | -0.0011545321623267| 17394499472919.572  | 2.0950120275727344  | 0.0065734179528859  | 0.0489087104797363  |
 | Extra Tree | 6.658766113998042e-15| 1.0                | -76170.39368474306 | -76124.83396005248 | 1.0                | 9.853109095779605e-16| 4.4529147578611235e-15| 1.0                | 0.07291269302368164 |
 
-Từ đây, ta nhận thấy Extra Tree Regressor là mô hình tốt nhất.
+Xét tất cả các metric, ta nhận thấy Extra Tree Regressor là mô hình tốt nhất.

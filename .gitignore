@@ -1,2 +1,4 @@
 page*.csv
 tmp.py
+__pycache__/
+catboost_info/
