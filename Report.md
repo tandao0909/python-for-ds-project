@@ -2,8 +2,9 @@
 
 ## Thông Tin Chung
 
-| **Trường** | Đại học Khoa học Tự nhiên - ĐHQG TP.HCM |
+| Thông tin | Nội dung |
 |------------|--------------|
+| **Trường** | Đại học Khoa học Tự nhiên - ĐHQG TP.HCM |
 | **Khoa**   | Toán - Tin học   |
 | **Môn học** | Python cho Khoa học dữ liệu |
 | **Đề tài** | House price prediction in Ho Chi Minh City |
