@@ -19,6 +19,9 @@
 | 22110245   | Lê Phú Trường |
 | 22110263   | Trần Lê Hữu Vinh |
 
+## Mục tiêu dự án
+
+
 ___
 
 # Table of contents
@@ -26,6 +29,7 @@ ___
 - [Thông tin dự án](#thông-tin-dự-án)
   - [Thông Tin Chung](#thông-tin-chung)
   - [Danh Sách Thành Viên](#danh-sách-thành-viên)
+  - [Mục tiêu dự án](#mục-tiêu-dự-án)
 - [Table of contents](#table-of-contents)
 - [I. Data Crawling and Preprocessing](#i-data-crawling-and-preprocessing)
   - [Thu thập dữ liệu](#thu-thập-dữ-liệu)
