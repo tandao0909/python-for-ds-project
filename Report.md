@@ -1,5 +1,29 @@
+# Thông tin dự án
+
+## Thông Tin Chung
+
+| **Trường** | Đại học Khoa học Tự nhiên - ĐHQG TP.HCM |
+|------------|--------------|
+| **Khoa**   | Toán - Tin học   |
+| **Đề tài** | House price prediction in Ho Chi Minh City |
+
+## Danh Sách Thành Viên
+
+| **MSSV** | **Tên**             |
+|----------------|---------------------|
+| 22110063   | Hồ Quốc Nhân Hòa |
+| 22110195   | Đào Xuân Tân |
+| 22110202   | Lý Quang Thắng |
+| 22110245   | Lê Phú Trường |
+| 22110263   | Trần Lê Hữu Vinh |
+
+___
+
 # Table of contents
 
+- [Thông tin dự án](#thông-tin-dự-án)
+  - [Thông Tin Chung](#thông-tin-chung)
+  - [Danh Sách Thành Viên](#danh-sách-thành-viên)
 - [Table of contents](#table-of-contents)
 - [I. Data Crawling and Preprocessing](#i-data-crawling-and-preprocessing)
   - [Thu thập dữ liệu](#thu-thập-dữ-liệu)
@@ -63,6 +87,8 @@
   - [Giải thích các metric](#giải-thích-các-metric)
   - [Kết quả](#kết-quả)
 - [V. Conclusion](#v-conclusion)
+
+___
 
 # I. Data Crawling and Preprocessing
 
