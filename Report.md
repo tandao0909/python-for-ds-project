@@ -1,11 +1,40 @@
+# Thông tin dự án
+
+## Thông Tin Chung
+
+| **Trường** | Đại học Khoa học Tự nhiên - ĐHQG TP.HCM |
+|------------|--------------|
+| **Khoa**   | Toán - Tin học   |
+| **Môn học** | Python cho Khoa học dữ liệu |
+| **Đề tài** | House price prediction in Ho Chi Minh City |
+| **Đường dẫn** | [python-for-ds-project](https://github.com/tandao0909/python-for-ds-project) |
+
+## Danh Sách Thành Viên
+
+| **MSSV** | **Tên**             |
+|----------------|---------------------|
+| 22110063   | Hồ Quốc Nhân Hòa |
+| 22110195   | Đào Xuân Tân |
+| 22110202   | Lý Quang Thắng |
+| 22110245   | Lê Phú Trường |
+| 22110263   | Trần Lê Hữu Vinh |
+
+## Mục tiêu dự án
+
+
+___
+
 # Table of contents
 
+- [Thông tin dự án](#thông-tin-dự-án)
+  - [Thông Tin Chung](#thông-tin-chung)
+  - [Danh Sách Thành Viên](#danh-sách-thành-viên)
+  - [Mục tiêu dự án](#mục-tiêu-dự-án)
 - [Table of contents](#table-of-contents)
 - [I. Data Crawling and Preprocessing](#i-data-crawling-and-preprocessing)
   - [Thu thập dữ liệu](#thu-thập-dữ-liệu)
     - [Mục tiêu](#mục-tiêu)
     - [Quy trình thu thập dữ liệu](#quy-trình-thu-thập-dữ-liệu)
-      - [Cách script hoạt động](#cách-script-hoạt-động)
   - [Chuyển đổi dữ liệu](#chuyển-đổi-dữ-liệu)
     - [Mục tiêu](#mục-tiêu-1)
     - [Xử lý định dạng của Data Frame](#xử-lý-định-dạng-của-data-frame)
@@ -14,12 +43,14 @@
       - [Xử lý các dữ liệu số](#xử-lý-các-dữ-liệu-số)
       - [Tạo ra các cột dữ liệu mới hữu ích cho bài toán](#tạo-ra-các-cột-dữ-liệu-mới-hữu-ích-cho-bài-toán)
     - [Trích xuất đặt trưng về địa chỉ](#trích-xuất-đặt-trưng-về-địa-chỉ)
-- [II. EDA và Feature Engineering](#ii-eda-và-feature-engineering)
+- [II. EDA and Feature Engineering](#ii-eda-and-feature-engineering)
   - [1. Khai báo thư viện và thiết lập](#1-khai-báo-thư-viện-và-thiết-lập)
-  - [2. Rút ra thông tin từ dữ liệu](#2-rút-ra-thông-tin-từ-dữ-liệu)
+  - [2. Khám phá dữ liệu](#2-khám-phá-dữ-liệu)
     - [2.1. Tổng quan về dữ liệu](#21-tổng-quan-về-dữ-liệu)
+      - [2.1.1. Nhận xét về dữ liệu ban đầu](#211-nhận-xét-về-dữ-liệu-ban-đầu)
+      - [2.1.2. Tóm tắt khả năng sử dụng dữ liệu](#212-tóm-tắt-khả-năng-sử-dụng-dữ-liệu)
     - [2.2. Phân tích phân phối các biến định lượng](#22-phân-tích-phân-phối-các-biến-định-lượng)
-    - [2.3. Tình trạng dữ liệu thiếu:](#23-tình-trạng-dữ-liệu-thiếu)
+    - [2.3. Tình trạng dữ liệu thiếu](#23-tình-trạng-dữ-liệu-thiếu)
     - [2.4. Phân tích theo thời gian](#24-phân-tích-theo-thời-gian)
     - [2.5. Các phát hiện chính](#25-các-phát-hiện-chính)
   - [3. Xử lý và làm sạch dữ liệu với `DataProcessing.py`](#3-xử-lý-và-làm-sạch-dữ-liệu-với-dataprocessingpy)
@@ -56,6 +87,7 @@
       - [5.7.2. Select K Best](#572-select-k-best)
       - [5.7.3. GridSearchCV](#573-gridsearchcv)
       - [5.7.4. RandomizedSearchCV](#574-randomizedsearchcv)
+    - [5.8. Kết quả chọn lọc đặc trưng](#58-kết-quả-chọn-lọc-đặc-trưng)
   - [6. Tách tập dữ liệu](#6-tách-tập-dữ-liệu)
   - [7. Xây dựng pipeline với `HousingPipeline.py`](#7-xây-dựng-pipeline-với-housingpipelinepy)
 - [III. Model Training](#iii-model-training)
@@ -63,6 +95,8 @@
   - [Giải thích các metric](#giải-thích-các-metric)
   - [Kết quả](#kết-quả)
 - [V. Conclusion](#v-conclusion)
+
+___
 
 # I. Data Crawling and Preprocessing
 
@@ -103,7 +137,7 @@ Quy trình trích xuất thông tin sử dụng một số công cụ quen thu�
 
 Tuy nhiên việc thu thập từng trang như vậy chưa thực sự tối ưu về mặt thời gian, nên nhóm quyết định chạy script trên 10 luồng cùng một lúc bằng thư viện `ThreadPoolExecutor`.
 
-#### Cách script hoạt động
+**Cách script hoạt động:**
 
 ```python
 def get_data(start_page):
@@ -595,7 +629,9 @@ Và kết quả sau khi áp dụng bộ lọc là: (với "123 Phu Dong" bị lo
 
 Chi tiết việc cào tất cả tên đường ở [crawl_street_names.py](crawl_street_names.py)
 
-# II. EDA và Feature Engineering
+___
+
+# II. EDA and Feature Engineering
 
 ## 1. Khai báo thư viện và thiết lập
 
@@ -657,7 +693,7 @@ from Visualize import (
         - **`visualize_real_estate_clusters`**: Hiển thị các cụm dựa trên vị trí hoặc giá.
         - **`visualize_real_estate_price_heatmap`**: Tạo biểu đồ nhiệt cho giá cả, có thể biểu diễn trên bản đồ.
 
-## 2. Rút ra thông tin từ dữ liệu
+## 2. Khám phá dữ liệu
 
 ### 2.1. Tổng quan về dữ liệu
 
@@ -670,9 +706,25 @@ from Visualize import (
 | 115834 | 4.60  | 38   | 4.0      | 4.0  | 3.0      | True      | NaN               | NaN             | False  | sổ đỏ/sổ hồng | tân hóa          | quận 6     | tin thường | 22/07/2024 |
 
 
-- Số lượng quan sát (records): 9,882.
-- Số lượng cột: 14.
-- Dữ liệu thiếu: Nhiều cột có dữ liệu thiếu, đặc biệt là bedrooms, wc, n_floors, house_orientation, furniture, và legal.
+#### 2.1.1. Nhận xét về dữ liệu ban đầu
+
+Bảng dữ liệu bất động sản có 15 cột, bao gồm thông tin liên quan đến giá cả, diện tích, số phòng, số tầng, tình trạng pháp lý, và các đặc trưng khác. Tuy nhiên, dữ liệu hiện tại có một số điểm cần lưu ý:
+
+
+- **Dữ liệu bị thiếu (Missing Values):** Các cột `n_floors`, `wc`, `furniture`, `legal`, `house_orientation`, và `street` có giá trị bị thiếu, đặc biệt là `house_orientation` bị thiếu toàn bộ.
+
+- **Dữ liệu bất thường (Outliers):** Có một số giá trị bất thường hoặc không hợp lý trong dữ liệu. Ví dụ, `bedrooms = 19.0` là giá trị bất thường, có thể do lỗi hoặc dữ liệu không hợp lệ.
+
+- **Cột không thông tin:** `type` chỉ chứa một giá trị duy nhất ("tin thường"), không có giá trị phân biệt, có thể loại bỏ khỏi phân tích.
+
+#### 2.1.2. Tóm tắt khả năng sử dụng dữ liệu
+- **Cột sử dụng được:** `price`, `area`, `bedrooms`, `wc`, `n_floors`, `district`, và `car_place` là các cột có thể sử dụng để phân tích sau khi làm sạch.
+- **Cột cần xử lý:**
+  - `house_orientation` và `furniture` chứa nhiều giá trị thiếu.
+  - `street` và `legal` cần điền dữ liệu thiếu.
+- **Cột có thể loại bỏ:**
+  - `type` không mang lại thông tin hữu ích.
+  - `id` không cần thiết trong phân tích, chỉ dùng làm định danh.
 
 ### 2.2. Phân tích phân phối các biến định lượng
 
@@ -693,57 +745,50 @@ Dựa trên các biểu đồ histogram và boxplot:
        - Diện tích trung bình: **76.43 m²**.
        - Phần lớn các bất động sản có diện tích dưới 100 m².
        - Phân phối lệch phải do một số ít bất động sản có diện tích rất lớn (trên 400 m²).
-   - **Ngoại lai**:
-       - Các giá trị vượt quá 400 m² có thể là ngoại lệ (biệt thự hoặc lỗi dữ liệu).
+   - **Ngoại lai**: Các giá trị vượt quá 400 m² có thể là ngoại lệ (biệt thự hoặc lỗi dữ liệu).
 
 - `bedrooms`:
     - **Trung bình và phân phối**:
        - Trung bình: **3.41 phòng ngủ**.
        - Phần lớn dữ liệu tập trung từ 1 đến 5 phòng ngủ.
-   - **Ngoại lai**:
-       - Số phòng ngủ trên 20 là ngoại lệ. Hiếm gặp và cần kiểm tra thêm (có thể là nhà tập thể hoặc lỗi dữ liệu).
+   - **Ngoại lai**: Số phòng ngủ trên 20 là ngoại lệ. Hiếm gặp và cần kiểm tra thêm (có thể là nhà tập thể hoặc lỗi dữ liệu).
 
 - `wc`:
     - **Trung bình và phân phối**:
        - Phân phối tương tự như `bedrooms`, với phần lớn dữ liệu dưới 5 phòng vệ sinh.
-   - **Ngoại lai**:
-       - Giá trị vượt trên 20 phòng vệ sinh có thể không thực tế.
+   - **Ngoại lai**: Giá trị vượt trên 20 phòng vệ sinh có thể không thực tế.
 
 - `n_floors`:
     - **Trung bình và phân phối**:
        - Phần lớn dữ liệu có số tầng nhỏ hơn 5.
        - Histogram cho thấy phần lớn bất động sản là nhà cấp thấp hoặc tòa nhà thấp tầng.
-   - **Ngoại lai**:
-       - Giá trị cao nhất (900 tầng) rõ ràng không hợp lý và có thể là lỗi nhập liệu.
+   - **Ngoại lai**: Giá trị cao nhất (900 tầng) rõ ràng không hợp lý và có thể là lỗi nhập liệu.
 
-### 2.3. Tình trạng dữ liệu thiếu:
+### 2.3. Tình trạng dữ liệu thiếu
 
-| Column              | Missing Values |
-|---------------------|----------------|
-| id                  | 0              |
-| price               | 482            |
-| area                | 0              |
-| bedrooms            | 1890           |
-| wc                  | 2494           |
-| n_floors            | 3222           |
-| car_place           | 0              |
-| house_orientation   | 8609           |
-| furniture           | 9846           |
-| facade              | 0              |
-| legal               | 8207           |
-| street              | 3970           |
-| district            | 0              |
-| type                | 0              |
-| date                | 0              |
+| Column              | Missing Values | Percentage Missing |
+|---------------------|----------------|--------------------|
+| id                  | 0              | 0%                 |
+| price               | 482            | 5%                 |
+| area                | 0              | 0%                 |
+| bedrooms            | 1,890          | 19%                |
+| wc                  | 2,494          | 25%                |
+| n_floors            | 3,222          | 32%                |
+| car_place           | 0              | 0%                 |
+| house_orientation   | 8,609          | 86%                |
+| furniture           | 9,846          | 98%                |
+| legal               | 8,207          | 82%                |
+| street              | 3,970          | 40%                |
+| district            | 0              | 0%                 |
+| type                | 0              | 0%                 |
+| date                | 0              | 0%                 |
+| facade              | 0              | 0%                 |
 
 **dtype:** int64
 
+- **Cột có dữ liệu thiếu nhiều nhất:** `furniture` và `house_orientation` có hơn 80% dữ liệu bị thiếu. Cần xử lý cẩn thận hoặc loại bỏ nếu không thể khôi phục.
+- **Cột có dữ liệu thiếu ít nhất:** `price` và `area` không có dữ liệu thiếu, có thể sử dụng trực tiếp.
 
-Các cột quan trọng bị thiếu dữ liệu nhiều:
-- `bedrooms`: 1,890 thiếu (19%).
-- `wc`: 2,494 thiếu (25%).
-- `n_floors`: 3,222 thiếu (32%).
-- `house_orientation` và `furniture`: hơn 80% thiếu.
 
 ### 2.4. Phân tích theo thời gian
 
@@ -2116,11 +2161,11 @@ from Visualize import check_coordinates_in_vietnam,
     \
     **Nhận xét:** 
 
-    1. **Phân cụm không gian:** Ta thấy rõ ràng có hai cụm chính được hình thành, thể hiện qua hai màu khác nhau (ví dụ: cụm màu tím ở phía tây – trung tâm, và cụm màu xanh lá tập trung nhiều hơn ở phía đông nam).
+    1. **Phân cụm không gian:** Ta thấy rõ ràng có hai cụm chính được hình thành, thể hiện qua hai màu khác nhau (ví dụ: cụm màu xanh lá ở phía tây – trung tâm, và cụm màu xanh dương tập trung nhiều hơn ở phía đông nam).
 
     2. **Khu vực và phân bố:**
-       - Cụm màu tím: Tập trung rất dày ở khu vực nội thành hoặc các vùng giáp ranh trung tâm Thành phố Hồ Chí Minh. Sự tập trung này có thể phản ánh một thị trường bất động sản sôi động, nhiều lựa chọn hoặc giá trị tài sản tương đối đồng đều.
-       - Cụm màu xanh lá: Phân bố về phía đông, có vẻ thưa hơn so với cụm tím. Khu vực này có thể là quận 2, Quận 9, Thủ Đức (nay thuộc TP. Thủ Đức), hoặc các vùng lân cận. Việc tách biệt địa lý này có thể do rào cản tự nhiên (như sông Sài Gòn) hoặc do các đặc điểm thị trường, quy hoạch đô thị khác nhau.
+       - Cụm màu xanh lá: Tập trung rất dày ở khu vực nội thành hoặc các vùng giáp ranh trung tâm Thành phố Hồ Chí Minh. Sự tập trung này có thể phản ánh một thị trường bất động sản sôi động, nhiều lựa chọn hoặc giá trị tài sản tương đối đồng đều.
+       - Cụm màu xanh dương: Phân bố về phía đông, có vẻ thưa hơn so với cụm xanh lá. Khu vực này có thể là quận 2, Quận 9, Thủ Đức (nay thuộc TP. Thủ Đức), hoặc các vùng lân cận. Việc tách biệt địa lý này có thể do rào cản tự nhiên (như sông Sài Gòn) hoặc do các đặc điểm thị trường, quy hoạch đô thị khác nhau.
 
     3. **Ý nghĩa phân tích:**
        - Phân cụm giúp nhận diện ranh giới hoặc đặc trưng từng khu vực địa lý. Mỗi cụm có thể mang những đặc điểm chung về giá cả, loại hình bất động sản, mức độ phát triển hạ tầng, tiện ích, giao thông, v.v.
@@ -2678,6 +2723,27 @@ Distance to center 1: 0.07810367012589219
 
 Các đặc trưng quan trọng được chọn từ mô hình Random Forest. Ta có thể chọn ra $k$ đặc trưng quan trọng nhất từ mô hình tùy ý dựa vào thứ tự giảm dần của feature importance.
 
+### 5.8. Kết quả chọn lọc đặc trưng
+
+Bảng dữ liệu sau khi chọn lọc đặc trưng dựa trên phương thức `combine_selected_features` sau khi chạy toàn bộ quy trình Feature Selection:
+
+| Cluster | n_floors | area | id     | car_place | wc     | bedrooms | Distance to center 1 | price  |
+|---------|----------|------|--------|-----------|--------|----------|----------------------|--------|
+| 0       | 1.0      | 57   | 121356 | 0         | 2.0000 | 2.0000   | 10.874742           | 0.790  |
+| 1       | 3.0      | 16   | 115827 | 0         | 3.0000 | 4.0000   | 3.401934            | 2.600  |
+| 2       | 5.0      | 32   | 115833 | 1         | 2.0696 | 4.0000   | 5.458846            | 3.000  |
+| 3       | 3.0      | 38   | 115834 | 1         | 4.0000 | 3.0000   | 4.487381            | 4.600  |
+| 4       | 4.0      | 76   | 115837 | 1         | 4.0000 | 4.0000   | 8.500217            | 3.450  |
+| ...     | ...      | ...  | ...    | ...       | ...    | ...      | ...                 | ...    |
+| 5828    | 4.0      | 46   | 88818  | 1         | 4.0000 | 4.0000   | 2.876457            | 9.500  |
+| 5829    | 1.0      | 48   | 86770  | 0         | 2.0000 | 2.0000   | 9.774195            | 1.950  |
+| 5830    | 3.0      | 56   | 86258  | 1         | 4.0000 | 3.0000   | 7.209409            | 10.200 |
+| 5831    | 5.0      | 47   | 86002  | 1         | 5.0000 | 4.0000   | 6.469803            | 6.200  |
+| 5832    | 2.0      | 30   | 108530 | 0         | 1.2645 | 1.6957   | 6.643871            | 0.001  |
+
+[5833 rows × 9 columns]
+
+
 ## 6. Tách tập dữ liệu
 
 Trong phần này, chúng ta sẽ tiến hành xây dựng tập dữ liệu huấn luyện (train set) và kiểm tra (test set) từ bộ dữ liệu đã được xử lý trước đó. Mục đích là tìm ra biến có tương quan cao với giá (price) và phân tích cách biến đó phân bố. Sau đó, chia dữ liệu ra 2 tập train và test theo tỷ lệ phù hợp.
@@ -2942,6 +3008,8 @@ if __name__ == '__main__':
     df_train.to_csv('datasets/housing_train.csv', index=False)
     df_test.to_csv('datasets/housing_test.csv', index=False)
 ```
+
+___
 
 # III. Model Training
 
@@ -3246,6 +3314,8 @@ type TrainingInterface interface {
 
 Điều này là vì tuy interface giống nhau, và có thể sử dụng chung các hàm trợ giúp, bản chất chức năng các hàm này có thể thay đổi, và vì thế chúng ta không nên tạo thêm 1 hàm utility mới, mà nên viết riêng ra từ đầu.
 
+___
+
 # IV. Model Evalution
 
 Quá trình fine tune, vì mô hình svm và ensemble có thời gian train quá lâu, nhóm chỉ có thể sử dụng tham số mặc định, tuy vậy, việc sử dụng tham số đã fine tune đã được giải thích ở trong thư mục [train/](./train/)
@@ -3402,6 +3472,8 @@ Phân tích kết quả các mô hình:
 - Extra Tree: Extra Tree cho kết quả hoàn hảo với R2 = 1.0 và RMSE gần như bằng 0. 
 
 Xét tất cả các metric, ta nhận thấy Extra Tree Regressor là mô hình tốt nhất.
+
+___
 
 # V. Conclusion
 
