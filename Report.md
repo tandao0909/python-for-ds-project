@@ -2958,7 +2958,9 @@ BENCHMARK_DIRPATH = os.path.join(os.path.dirname(__file__), "benchmark")
 TARGET_COLUMN = "price"
 ```
 
-Cấu trúc của phần train model có thể hiểu đơn giản là 1 struct có interface như sau:
+Vì có những phần xử lý cần được thực hiện chung với mô hình vì ta cần lưu phần tiền xử lý đó để cùng áp dụng khi đánh giá mô hình, như StandardScaler, nên ta cần tiền xử lý mô hình trước bằng hàm `preprocess_data()`. Sau đó, đưa data đã tiền xử lý này vào từng nhóm mô hình để huấn luyện.
+
+Phần huấn luyện mô hình có thể có thể hiểu đơn giản là 1 struct có interface như sau:
 
 ```go
 type ModelTraining interface {
@@ -3166,9 +3168,72 @@ def preprocess_data(
     return data
 ```
 
-2 hàm trợ giúp này có tác dụng nhận vào các tham số của model family và thực hiện train. Vì việc ta cần thực hiện như nhau, dữ liệu sử dụng cũng như nhau, chỉ khác tham số truyền vào, nên ta có thể tách riêng ra từng family model và viết các tham số cần thiết ở đầu file đó.
+2 hàm trợ giúp `train_default_models` và `fine_tune_models` có tác dụng nhận vào các tham số của model family và thực hiện train. Vì việc ta cần thực hiện như nhau, dữ liệu sử dụng cũng như nhau, chỉ khác tham số truyền vào, nên ta có thể tách riêng ra từng family model và viết các tham số cần thiết ở đầu file đó. Điều này giúp ta có thể sửa 1 chỗ cần sửa duy nhất, khi các tham số cần thiết thay đổi. Trong 2 hàm này có sử dụng hàm `benchmark_model()` để đánh giá mô hình và lưu kết quả vào 1 file csv.
 
-Ở đây, chúng em sử dụng 4 model family: Linear, Tree-based, SVM, Ensemble. Mỗi family được đưa vào file riêng. Ở đây, em cố tình viết riêng hàm train cho từng model family, tuy chúng vẫn có cùng interface:
+Đây là ví dụ của cách viết của mô hình Linear:
+
+```python
+import os
+from typing import Any
+
+import pandas as pd
+
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
+from sklearn.linear_model._base import LinearModel
+
+from constants import TRAIN_PATH, TARGET_COLUMN, BENCHMARK_DIRPATH
+from utils import train_default_models, fine_tune_models, preprocess_data
+
+BENCHMARK_PATH = os.path.join(BENCHMARK_DIRPATH, "linear_benchmark.csv")
+MODEL_DICT: dict[str, LinearModel] = {
+    "Linear Regression": LinearRegression(),
+    "Lasso": Lasso(),
+    "Ridge": Ridge(),
+    "Elastic Net": ElasticNet(),
+}
+FINE_TUNE_DICT: dict[str, dict[str, list[Any]]] = {
+    "Lasso": {"alpha": [0.01, 0.1, 1.0, 10, 100]},
+    "Ridge": {"alpha": [0.01, 0.1, 1.0, 10, 100]},
+    "Elastic Net": {
+        "alpha": [0.01, 0.1, 1.0, 10, 100],
+        "l1_ratio": [0.01, 0.1, 1.0],
+    },
+}
+
+
+def train_linear_models(
+    X: pd.DataFrame, y: pd.Series, default: bool = True, fine_tune: bool = True
+):
+    if default or fine_tune:
+        Path(BENCHMARK_PATH).parent.mkdir(parents=True, exist_ok=True)
+        # Clear all content in the benchmark file
+        with open(BENCHMARK_PATH, "w") as file:
+            pass
+    if default:
+        print("Train linear models using default parameters")
+        train_default_models(X, y, model_dict=MODEL_DICT, benchmark_path=BENCHMARK_PATH)
+    if fine_tune:
+        print("Fine tune linear models")
+        fine_tune_models(
+            X,
+            y,
+            finetune_dict=FINE_TUNE_DICT,
+            model_dict=MODEL_DICT,
+            benchmark_path=BENCHMARK_PATH,
+        )
+    print(f"See the benchmark of linear models at {BENCHMARK_PATH}")
+
+
+if __name__ == "__main__":
+    data = pd.read_csv(TRAIN_PATH)
+    data = preprocess_data(data)
+    X = data.drop(TARGET_COLUMN, axis=1)
+    y = data[TARGET_COLUMN]
+    train_linear_models(X, y)
+
+```
+
+Ở đây, chúng em sử dụng 4 lớp mô hình: Linear, Tree-based, SVM, Ensemble. Mỗi lớp được đưa vào file riêng. Ở đây, em cố tình viết riêng hàm train cho từng model family, tuy chúng vẫn có cùng interface:
 
 ```go
 type TrainingInterface interface {
@@ -3184,7 +3249,75 @@ type TrainingInterface interface {
 # IV. Model Evalution
 
 Quá trình fine tune, vì mô hình svm và ensemble có thời gian train quá lâu, nhóm chỉ có thể sử dụng tham số mặc định, tuy vậy, việc sử dụng tham số đã fine tune đã được giải thích ở trong thư mục [train/](./train/)
-Sau khi thực hiện fine tune, chạy script [evaluate.py](./train/evaluate.py) sẽ tự động lưu đánh gái và lưu các mô hình đã fine tune lại. Tuy vậy, vì việc lựa chọn metric để đánh giá xem mô hình nào là tốt nhất đòi hỏi có sự đánh giá của con người, ta cần phải nhập lại tham số mà ta cho là tốt nhất vào file này để chạy lại. Hướng dẫn có trong [README](./train/README.md) của thư mục này.
+Sau khi thực hiện fine tune, chạy script [evaluate.py](./train/evaluate.py) sẽ tự động lưu đánh giá và lưu các mô hình đã fine tune lại:
+
+```python
+import os
+from pathlib import Path
+from typing import Any
+
+import joblib
+import pandas as pd
+
+from sklearn.svm import SVR
+from sklearn.linear_model import Ridge
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import ExtraTreesRegressor
+
+from constants import TEST_PATH, TARGET_COLUMN, BENCHMARK_DIRPATH
+from utils import train_default_models
+
+MODEL_DICT: dict[str, Any]  = {
+    "Ridge": Ridge(),
+    "Tree": DecisionTreeRegressor(
+        criterion='poisson',
+        max_depth=50,
+        max_features=None,
+        max_leaf_nodes=50,
+        min_impurity_decrease=0.0,
+        min_samples_leaf=4,
+        min_samples_split=2,
+        min_weight_fraction_leaf=0.0,
+        splitter='best'
+    ),
+    "Rbf": SVR(kernel="rbf"),
+    "Extra Tree": ExtraTreesRegressor(n_jobs=-1),
+}
+BENCHMARK_PATH = os.path.join(BENCHMARK_DIRPATH, "evaluate.csv")
+MODEL_DIRPATH = os.path.join(os.path.dirname(__file__), "models")
+
+def evaluate_models(
+    X: pd.DataFrame, y: pd.Series
+):
+    Path(BENCHMARK_PATH).parent.mkdir(parents=True, exist_ok=True)
+
+    # Clear all content in the benchmark file
+    with open(BENCHMARK_PATH, "w") as file:
+        pass
+    print("Evaluate models using the fine tuned parameters.")
+    train_default_models(X, y, model_dict=MODEL_DICT, benchmark_path=BENCHMARK_PATH)
+    print(f"See the evaluation results at {BENCHMARK_PATH}")
+
+def save_models(X: pd.DataFrame, y: pd.Series):
+    Path(MODEL_DIRPATH).mkdir(parents=True, exist_ok=True)
+    for model_name, model in MODEL_DICT.items():
+        model.fit(X, y)
+        model_path = os.path.join(MODEL_DIRPATH, f"{model_name}.joblib")
+        joblib.dump(model, model_path)
+    print(f"Models are saved at {MODEL_DIRPATH}.")
+
+if __name__ == "__main__":
+    data = pd.read_csv(TEST_PATH)
+    X = data.drop(TARGET_COLUMN, axis=1)
+    y = data[TARGET_COLUMN]
+    evaluate_models(X, y)
+    save_models(X, y)
+
+```
+
+Trong file này, ta sử dụng cách viết y hệt như cách viết các lớp mô hình kia.
+
+Tuy vậy, vì việc lựa chọn metric để đánh giá xem mô hình nào là tốt nhất đòi hỏi có sự đánh giá của con người, ta cần phải nhập lại tham số của mô hình mà ta cho là tốt nhất trong từng lớp mô hình vào file này để chạy lại. Để có thông tin các tham số này, ta cần chạy file [train.py](./train/train.py), và đọc kết quả đã lưu lại trong thư mục [bennchmark](./train/benchmark/), sau đó nhập thông tin của mô hình dưới dạng dictionary của Python.
 
 ## Giải thích các metric
 1. **Root Mean Squared Error (RMSE)**:
@@ -3261,6 +3394,12 @@ Dưới đây là kết quả đánh giá trên tập test.
 | Tree       | 1.6746113529910678  | 0.6116292027877468  | 1221.366311415272  | 1266.926036105851  | 0.6086081680644017 | 16928697828121.854  | 1.2085530462736964  | 0.6116292027877468  | 0.0038893222808837  |
 | Rbf        | 2.67829685309823    | 0.0065730757188575  | 2317.4126638969083 | 2362.972388587488  | -0.0011545321623267| 17394499472919.572  | 2.0950120275727344  | 0.0065734179528859  | 0.0489087104797363  |
 | Extra Tree | 6.658766113998042e-15| 1.0                | -76170.39368474306 | -76124.83396005248 | 1.0                | 9.853109095779605e-16| 4.4529147578611235e-15| 1.0                | 0.07291269302368164 |
+
+Phân tích kết quả các mô hình:
+- Ridge Regression: Mô hình Ridge cho hiệu suất trung bình với R2 = 0.45, có nghĩa là nó giải thích được 45% biến thiên trong dữ liệu. RMSE là 1.99 và MAE là 1.48 cho thấy độ lệch dự đoán trung bình. Thời gian huấn luyện rất nhanh (0.001s), phù hợp cho các ứng dụng thời gian thực.
+- Decision Tree: Cây quyết định thể hiện hiệu suất khá tốt với R2 = 0.61, giải thích được 61% biến thiên. RMSE (1.67) và MAE (1.21) thấp hơn so với Ridge, cho thấy độ chính xác dự đoán tốt hơn. Thời gian huấn luyện vẫn rất nhanh (0.004s).
+- SVM với kernel RBF: Mô hình RBF cho kết quả kém nhất với R2 gần như bằng 0 (0.0066), cho thấy mô hình hầu như không học được gì từ dữ liệu. RMSE (2.68) và MAE (2.09) cao nhất trong các mô hình. Thời gian huấn luyện cũng chậm hơn (0.049s).
+- Extra Tree: Extra Tree cho kết quả hoàn hảo với R2 = 1.0 và RMSE gần như bằng 0. 
 
 Xét tất cả các metric, ta nhận thấy Extra Tree Regressor là mô hình tốt nhất.
 
