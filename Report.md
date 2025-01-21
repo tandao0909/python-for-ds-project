@@ -32,6 +32,19 @@ Dự án **"House Price Prediction in Ho Chi Minh City"** nhằm đạt được
 4. **Phát triển hệ thống hỗ trợ quyết định**: Xây dựng công cụ dựa trên mô hình học máy, giúp người dùng dễ dàng kiểm tra và dự đoán giá bất động sản trong thời gian thực. Cung cấp giải pháp hữu ích cho cả người mua, người bán, và các nhà đầu tư trong lĩnh vực bất động sản.
 
 5. **Nâng cao kỹ năng và kiến thức học thuật**: Áp dụng các kiến thức và kỹ năng học được từ môn học Python cho Khoa học dữ liệu vào một dự án thực tế. Tiếp tục học hỏi và phát triển bản thân qua việc thực hiện các công việc phức tạp và đòi hỏi sự sáng tạo.
+
+## Khuyến nghị về việc xem bài báo cáo
+
+Để có trải nghiệm tốt nhất khi đọc báo cáo, thầy/ các bạn nên xem ở báo cáo được lưu dưới dạng file HTML. Các bước thực hiện như sau:
+
+1. Mở Terminal hoặc Command Prompt và chạy lệnh sau để clone repository về máy:
+
+```bash
+git clone https://github.com/tandao0909/python-for-ds-project.git
+```
+
+2. Mở file `Report.html` trong trình duyệt web để xem báo cáo.
+
 ___
 
 # Table of contents
@@ -40,6 +53,7 @@ ___
   - [Thông Tin Chung](#thông-tin-chung)
   - [Danh Sách Thành Viên](#danh-sách-thành-viên)
   - [Mục tiêu dự án](#mục-tiêu-dự-án)
+  - [Khuyến nghị về việc xem bài báo cáo](#khuyến-nghị-về-việc-xem-bài-báo-cáo)
 - [Table of contents](#table-of-contents)
 - [I. Data Crawling and Preprocessing](#i-data-crawling-and-preprocessing)
   - [Thu thập dữ liệu](#thu-thập-dữ-liệu)
