@@ -21,7 +21,17 @@
 
 ## Mục tiêu dự án
 
+Dự án **"House Price Prediction in Ho Chi Minh City"** nhằm đạt được các mục tiêu chính sau:
 
+1. **Dự đoán giá bất động sản**: Xây dựng mô hình học máy để dự đoán giá bất động sản tại TP. Hồ Chí Minh dựa trên các đặc trưng quan trọng như diện tích, số phòng ngủ, số tầng, vị trí, và các yếu tố liên quan khác. Ngoài ra, mô hình cũng cần đảm bảo độ chính xác cao, giúp người mua và nhà đầu tư có thêm thông tin trong việc định giá.
+
+2. **Phân tích và hiểu biết về thị trường bất động sản**: Khám phá và trực quan hóa các yếu tố ảnh hưởng lớn đến giá nhà, bao gồm khu vực, tiện ích, và tình trạng pháp lý. Đưa ra các nhận định về xu hướng giá cả tại TP. Hồ Chí Minh, từ đó cung cấp góc nhìn tổng quan cho các bên liên quan.
+
+3. **Xử lý dữ liệu bất động sản thực tế**: Thu thập, xử lý, và chuẩn hóa dữ liệu bất động sản từ các nguồn trực tuyến. Khắc phục vấn đề dữ liệu thiếu và bất thường thông qua các phương pháp xử lý tiên tiến, giúp cải thiện chất lượng dữ liệu và hiệu suất mô hình.
+
+4. **Phát triển hệ thống hỗ trợ quyết định**: Xây dựng công cụ dựa trên mô hình học máy, giúp người dùng dễ dàng kiểm tra và dự đoán giá bất động sản trong thời gian thực. Cung cấp giải pháp hữu ích cho cả người mua, người bán, và các nhà đầu tư trong lĩnh vực bất động sản.
+
+5. **Nâng cao kỹ năng và kiến thức học thuật**: Áp dụng các kiến thức và kỹ năng học được từ môn học Python cho Khoa học dữ liệu vào một dự án thực tế. Tiếp tục học hỏi và phát triển bản thân qua việc thực hiện các công việc phức tạp và đòi hỏi sự sáng tạo.
 ___
 
 # Table of contents
