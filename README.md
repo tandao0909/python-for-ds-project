@@ -6,9 +6,8 @@
 
 Phát triển phần mềm có thể tự động thu thập dữ liệu về nhà đất trên trang web bất động sản lớn của Việt Nam https://batdongsan.vn/ (chủ yếu là nhà ở khu vực thành phố Hồ Chí Minh). Sau đó tiến hành đi sâu vào phân tích dữ liệu, tìm kiếm các mối quan hệ ảnh hưởng cao đến giá cả nhà đất. Cuối cùng huấn luyện một mô hình học máy giúp nhận vào các giá trị đặc trưng cần thiết và xuất ra được giá dự đoán của căn nhà.
 
-<p align="center">
-  <strong>CÁC THÀNH VIÊN TRONG DỰ ÁN</strong>
-</p>
+**CÁC THÀNH VIÊN TRONG DỰ ÁN**
+
 
 <p align="center">
   <table>
@@ -39,9 +38,8 @@ Phát triển phần mềm có thể tự động thu thập dữ liệu về nh
   </table>
 </p>
 
-<p align="center">
-TRƯỜNG ĐẠI HỌC KHOA HỌC TỰ NHIÊN - ĐHQG Hồ Chí Minh
-</p>
+**TRƯỜNG ĐẠI HỌC KHOA HỌC TỰ NHIÊN - ĐHQG Hồ Chí Minh**
+
 
 ## 2. Các framework sử dụng
 
