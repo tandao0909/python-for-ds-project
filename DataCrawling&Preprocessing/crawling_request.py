@@ -6,12 +6,14 @@ import pandas as pd
 from time import sleep
 from concurrent.futures import ThreadPoolExecutor
 import time
+import os
+import glob
 
 # URL to crawl data from
 url = "https://batdongsan.vn/filter?options=on&gia_tri_tinh_chon=1&priceMin=0&priceMax=400&areaMin=0&areaMax=500&"
 
 # List of starting pages for each thread
-num_pages = [1,51,101,151,201,251,301,351,401,451]
+num_pages = [1, 51, 101, 151, 201, 251, 301, 351, 401, 451]
 # Number of iterations (pages) to crawl per thread
 n_iter = 50
 
@@ -73,7 +75,7 @@ def get_data(start_page):
             location1 = [' '.join(item.split()) for item in location1]
         except requests.RequestException as e:
             print(f"Error fetching page {i}: {e}")
-            continue
+            raise e
         # Extract the links of the posts from elements
         links = [element['href'] for element in elements]
         n = len(links)
@@ -99,10 +101,10 @@ def get_data(start_page):
                 print(f"\tCrawled post {j+1}/{n} on page {i}")
             except requests.RequestException as e:
                 print(f"Error fetching post {links[j]}: {e}")
-                continue
+                raise e
             except Exception as e:
                 print(f"Error extracting data from post {links[j]}: {e}")
-                continue
+                raise e
             # Append the extracted information to the data list
             data.append(tmp)
         # If data is not empty, convert it to a DataFrame and save it to a CSV file
@@ -120,16 +122,35 @@ def get_data(start_page):
 
 if __name__ == '__main__':
     start_time = time.time()
-    # Create a ThreadPoolExecutor with 10 threads to crawl data faster
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        # Submit tasks to the executor
-        futures = [executor.submit(get_data, start_page) for start_page in num_pages]
-        # Collect results from the futures
-        list_report = [future.result() for future in futures]
-    print("------All done!------")
-    # Concatenate all results into a single DataFrame
-    df = pd.concat(list_report, axis=0)
-    # Save the final DataFrame to a CSV file
-    df.to_csv('./data/raw_data.csv', sep='\t')
+    error_occurred = False
+    list_report = []
+    try:
+        # Create a ThreadPoolExecutor with 10 threads to crawl data faster
+        with ThreadPoolExecutor(max_workers=100) as executor:
+            # Submit tasks to the executor
+            futures = [executor.submit(get_data, start_page) for start_page in num_pages]
+            # Collect results from the futures
+            list_report = [future.result() for future in futures]
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        error_occurred = True
+
+    if not error_occurred:
+        print("------All done!------")
+        # Concatenate all results into a single DataFrame
+        df = pd.concat(list_report, axis=0)
+        # Save the final DataFrame to a CSV file
+        df.to_csv('./data/raw_data.csv', sep='\t')
+        # Delete all CSV files starting with "page"
+        for file in glob.glob('./data/page*.csv'):
+            os.remove(file)
+        print("All page CSV files deleted.")
+    else:
+        print("Crawling stopped due to an error. Concatenating collected data so far.")
+        if list_report:
+            df = pd.concat(list_report, axis=0)
+            df.to_csv('./data/raw_data_partial.csv', sep='\t')
+            print("Partial data saved to raw_data_partial.csv")
+
     # Print the total time taken to crawl data
     print(f"Total time: {time.time() - start_time} seconds")
