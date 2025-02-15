@@ -3502,4 +3502,11 @@ ___
 
 # V. Conclusion
 
-Từ project này, ta nhận thấy khả năng áp dụng của Python vào Web Scraping, Data Processing, Model Training. Quá trình phân tích và so sánh nhiều mô hình cho thấy mô hình Extra Tree Regressor có kết quả tốt nhất trên tất cả các metric. Từ đây, ta thấy sự hiệu quả của các thuật toán học máy nâng cao đối với bài toán dự đoán giá nhà. Tóm lại, Python là một ngôn ngữ mạnh mẽ, phục vụ rất tốt các tác vụ liên quan đến dự án khoa học dữ liệu.
+Dự án "Dự đoán giá bất động sản tại TP.Hồ Chí Minh" đã hoàn thành với mục tiêu xây dựng một mô hình học máy để dự đoán giá nhà, giúp các nhà đầu tư và người mua đưa ra quyết định thông minh hơn. Qua quá trình thu thập, xử lý và làm sạch dữ liệu, nhóm nghiên cứu đã xử lý hơn 10,000 bài đăng bất động sản từ trang web batdongsan.vn, ứng dụng các phương pháp như thu thập dữ liệu đa luồng, xử lý dữ liệu thiếu và dữ liệu bất thường, cùng với các kỹ thuật trích xuất thông tin từ mô tả bài đăng.
+
+Phân tích dữ liệu đã chỉ ra một số yếu tố quan trọng ảnh hưởng đến giá trị bất động sản, bao gồm diện tích, số phòng ngủ, số tầng và vị trí. Tuy nhiên, dữ liệu thiếu, lỗi nhập liệu, và các giá trị bất thường vẫn là các vấn đề cần khắc phục để nâng cao độ chính xác của mô hình.
+
+Bằng cách áp dụng các kỹ thuật học máy như Random Forest và Gradient Boosting Regressor, cùng với việc cải tiến việc xử lý dữ liệu thiếu và đặc trưng hóa các yếu tố không gian, nhóm đã phát triển một mô hình có thể dự đoán giá bất động sản với độ chính xác khá cao. Hệ thống này có thể được triển khai dưới dạng công cụ hỗ trợ quyết định cho người mua, người bán và các nhà đầu tư trong lĩnh vực bất động sản.
+
+Dự án này không chỉ giúp nâng cao kỹ năng phân tích dữ liệu và áp dụng Python trong thực tế mà còn cung cấp cái nhìn sâu sắc về thị trường bất động sản tại TP.Hồ Chí Minh, tạo tiền đề cho những nghiên cứu và ứng dụng tiếp theo trong ngành.
+
